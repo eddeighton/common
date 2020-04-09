@@ -4,11 +4,13 @@ Copyright Deighton Systems Limited (c) 2016
 */
 
 #include "common/file.hpp"
+#include "common/assert_verify.hpp"
+
+#include <boost/iostreams/device/mapped_file.hpp>
 
 #include <list>
 #include <fstream>
-
-#include "common/assert_verify.hpp"
+#include <algorithm>
 
 namespace boost
 {
@@ -142,6 +144,71 @@ std::unique_ptr< boost::filesystem::ofstream > createOrLoadNewFileStream( const 
     }
 
     return pFileStream;
+}
+
+std::unique_ptr< boost::filesystem::ofstream > createBinaryOutputFileStream( const boost::filesystem::path& filePath )
+{
+    boost::filesystem::ensureFoldersExist( filePath );
+    std::unique_ptr< boost::filesystem::ofstream > pFileStream( 
+        new boost::filesystem::ofstream( filePath, 
+            std::ios_base::trunc | std::ios_base::out | std::ios_base::binary ) );
+    if( !pFileStream->good() )
+    {
+        THROW_RTE( "Failed to create file: " << filePath.string() );
+    }
+
+    return pFileStream;
+}
+
+std::unique_ptr< boost::filesystem::ifstream > createBinaryInputFileStream( const boost::filesystem::path& filePath )
+{
+    std::unique_ptr< boost::filesystem::ifstream > pFileStream( 
+        new boost::filesystem::ifstream( filePath, 
+            std::ios_base::in | std::ios_base::binary ) );
+    if( !pFileStream->good() )
+    {
+        THROW_RTE( "Failed to load file: " << filePath.string() );
+    }
+
+    return pFileStream;
+}
+
+void updateFileIfChanged( const boost::filesystem::path& filePath, const std::string& strContents )
+{
+    bool bUpdateFile = true;
+    if( boost::filesystem::exists( filePath ) )
+    {
+        std::ifstream inputFileStream( filePath.native().c_str(), std::ios::in );
+        if( !inputFileStream.good() )
+        {
+            THROW_RTE( "Failed to open file: " << filePath.string() );
+        }
+        if( std::equal( 
+                std::istreambuf_iterator<char>( inputFileStream ), 
+                std::istreambuf_iterator<char>(), 
+                strContents.begin(), strContents.end() ) )
+        {
+            bUpdateFile = false;
+        }
+    }
+    
+    if( bUpdateFile )
+    {
+        std::unique_ptr< boost::filesystem::ofstream > pFileStream =
+                boost::filesystem::createNewFileStream( filePath );
+        *pFileStream << strContents;
+    }          
+}
+
+bool compareFiles( const boost::filesystem::path& fileOne, const boost::filesystem::path& fileTwo )
+{
+    boost::iostreams::mapped_file_source originalPreProcFile( fileOne );
+    boost::iostreams::mapped_file_source newPreProcFile( fileTwo );
+    return originalPreProcFile.size() == newPreProcFile.size() && 
+        std::equal( 
+            originalPreProcFile.data(), 
+            originalPreProcFile.data() + originalPreProcFile.size(), 
+            newPreProcFile.data() );
 }
 
 }

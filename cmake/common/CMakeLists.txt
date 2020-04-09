@@ -30,4 +30,5 @@ link_boost( commonlib system )
 set( InstalledHeaders ${COMMON_INCLUDE_HEADERS} )
 
 install( FILES ${InstalledHeaders} DESTINATION include/common )
-install( TARGETS commonlib DESTINATION bin)
+install( TARGETS commonlib EXPORT common DESTINATION bin)
+install( EXPORT common NAMESPACE Common:: FILE common-config.cmake DESTINATION share )
