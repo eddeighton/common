@@ -5,6 +5,7 @@ Copyright Deighton Systems Limited (c) 2015
 #ifndef DISCRETE_ANGLE_15_09_2013
 #define DISCRETE_ANGLE_15_09_2013
 
+#define _USE_MATH_DEFINES
 #include <cmath>
 
 #include "rounding.hpp"

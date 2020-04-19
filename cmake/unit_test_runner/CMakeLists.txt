@@ -4,30 +4,38 @@ cmake_minimum_required(VERSION 2.8)
 include( ${COMMON_ROOT_DIR}/cmake/boost_include.cmake )
 
 #get gtest
-include( ${THIRD_PARTY_DIR}/gtest/gtest_1_7_0_vs2017_include.cmake )
+include( ${COMMON_ROOT_DIR}/cmake/gtest_include.cmake )
 
 #get the unit test utils
-include( ${MODULE_DIR}/test_utils/cmake/test_utils_include.cmake )
+include( ${COMMON_ROOT_DIR}/cmake/test_utils_include.cmake )
 
 #get common
 include( ${COMMON_ROOT_DIR}/cmake/common_include.cmake )
 
-#get the tests
-include( ${MODULE_DIR}/common/cmake/common_tests_include.cmake )
+set( COMMON_TEST_DIR ${COMMON_ROOT_DIR}/tests )
 
-add_executable( common_tests
-			${COMMON_INCLUDE_HEADERS}
-            ${COMMON_TEST_SOURCES}
-			${TEST_UTILS_SRC_HEADERS}
-			${TEST_UTILS_SRC_SOURCES}
-			)
+set( COMMON_UNIT_TESTS
+	 ${COMMON_TEST_DIR}/angle_tests.cpp
+	 ${COMMON_TEST_DIR}/file_tests.cpp
+	 ${COMMON_TEST_DIR}/grammar_tests.cpp
+	 ${COMMON_TEST_DIR}/inplace_allocator_tests.cpp
+	 ${COMMON_TEST_DIR}/math_tests.cpp
+	 ${COMMON_TEST_DIR}/preprocessor_tests.cpp
+	 ${COMMON_TEST_DIR}/rounding_tests.cpp
+	 ${COMMON_TEST_DIR}/tuple_tests.cpp )
+
+add_executable( common_tests ${COMMON_UNIT_TESTS})
 
 ##configure all debug builds to have 'd' postfix
 set_target_properties( common_tests PROPERTIES DEBUG_POSTFIX d )
 set_target_properties( common_tests PROPERTIES FOLDER common )
 
-link_boost_usual( common_tests )
+link_boost( common_tests filesystem )
+link_boost( common_tests system )
+link_boost( common_tests date_time )
+link_boost( common_tests program_options )
 link_gtest( common_tests )
 link_common( common_tests )
+link_gtest_utils( common_tests )
 
 install( TARGETS common_tests DESTINATION bin)

@@ -5,6 +5,8 @@
 
 #include <vector>
 #include <list>
+#include <algorithm>
+#include <random>
 
 TEST( InplaceAllocator, InplaceAllocator_1 )
 {
@@ -43,6 +45,9 @@ TEST( InplaceAllocator, InplaceAllocator_2 )
 
 TEST( InplaceAllocator, InplaceAllocator_3 )
 {
+	std::random_device rd;
+    std::mt19937 g(rd());
+	
     ASSERT_TRUE( true );
     std::vector< size_t > buffer( 1024 );
 
@@ -57,7 +62,7 @@ TEST( InplaceAllocator, InplaceAllocator_3 )
     }
 
     std::vector< size_t* > ptrs_randomized( pointers.begin(), pointers.end() );
-    std::random_shuffle( ptrs_randomized.begin(), ptrs_randomized.end() );
+    std::shuffle( ptrs_randomized.begin(), ptrs_randomized.end(), g );
 
     size_t uiRemaining = 0;
     for( std::vector< size_t* >::iterator 
@@ -73,6 +78,9 @@ TEST( InplaceAllocator, InplaceAllocator_3 )
 
 TEST( InplaceAllocator, InplaceAllocator_4 )
 {
+	std::random_device rd;
+    std::mt19937 g(rd());
+	
     ASSERT_TRUE( true );
     std::vector< size_t > buffer( 1024 );
 
@@ -87,7 +95,7 @@ TEST( InplaceAllocator, InplaceAllocator_4 )
     }
 
     std::vector< size_t* > ptrs_randomized( pointers.begin(), pointers.end() );
-    std::random_shuffle( ptrs_randomized.begin(), ptrs_randomized.end() );
+    std::shuffle( ptrs_randomized.begin(), ptrs_randomized.end(), g );
     std::list< size_t* > ptrs_list( ptrs_randomized.begin(), ptrs_randomized.end() );
 
     size_t uiRemaining = 0;

@@ -8,6 +8,7 @@ Copyright Deighton Systems Limited (c) 2015
 #include <cmath>
 #include <cfenv>
 #include <limits>
+#include <algorithm>
 
 #include "assert_verify.hpp"
 

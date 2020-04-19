@@ -38,4 +38,4 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 include (InstallRequiredSystemLibraries)
 
 add_subdirectory( common )
-#add_subdirectory( unit_test_runner )
+add_subdirectory( unit_test_runner )

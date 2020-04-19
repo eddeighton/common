@@ -4,7 +4,7 @@
 #include <gtest/gtest.h>
 
 
-
+/*
 TEST( PreprocessorTests, test1 )
 {
     std::string str = "test";
@@ -44,3 +44,4 @@ TEST( PreprocessorTests, test3 )
 
     ASSERT_EQ( "test\nstufftest\nstuff", os.str() );
 }
+*/
