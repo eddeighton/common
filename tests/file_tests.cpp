@@ -86,6 +86,72 @@ TEST( FileUtils, edsInclude6 )
     ASSERT_EQ( pResult, edsInclude( pFile, pInclude ) );
 }
 
+
+TEST( FileUtils, edsIncludeFolder1 )
+{
+    const path pFile = "c:/a/b/";
+    const path pInclude = "c:/a/b/d.h";
+    const path pResult = "d.h";
+    ASSERT_EQ( pResult, edsInclude( pFile, pInclude ) );
+}
+
+TEST( FileUtils, edsIncludeFolder2 )
+{
+    const path pFile = "c:/a/b/";
+    const path pInclude = "c:/a/d.h";
+    const path pResult = "../d.h";
+    ASSERT_EQ( pResult, edsInclude( pFile, pInclude ) );
+}
+
+TEST( FileUtils, edsIncludeFolder3 )
+{
+    const path pFile = "c:/a/b/";
+    const path pInclude = "c:/d.h";
+    const path pResult = "../../d.h";
+    ASSERT_EQ( pResult, edsInclude( pFile, pInclude ) );
+}
+
+TEST( FileUtils, edsIncludeFolder4 )
+{
+    const path pFile = "c:/a/b/";
+    const path pInclude = "c:/e/d.h";
+    const path pResult = "../../e/d.h";
+    ASSERT_EQ( pResult, edsInclude( pFile, pInclude ) );
+}
+
+TEST( FileUtils, edsIncludeFolder5 )
+{
+    const path pFile = "c:/a/a/";
+    const path pInclude = "c:/a/a/a/a/a.h";
+    const path pResult = "a/a/a.h";
+    ASSERT_EQ( pResult, edsInclude( pFile, pInclude ) );
+}
+
+TEST( FileUtils, edsIncludeFolder6 )
+{
+    const path pFile = "/a/a/";
+    const path pInclude = "/a/a/a/a/a.h";
+    const path pResult = "a/a/a.h";
+    ASSERT_EQ( pResult, edsInclude( pFile, pInclude ) );
+}
+
+TEST( FileUtils, edsIncludeFolder7 )
+{
+    const path pFolder = "/a/b/";
+    const path pInclude = "/a/b/c/d/e.h";
+    const path pResult = "c/d/e.h";
+    ASSERT_EQ( pResult, edsInclude( pFolder, pInclude ) );
+}
+
+TEST( FileUtils, edsIncludeFolder8 )
+{
+    const path pFolder = "w:/testworkspace";
+    const path pInclude = "w:/testworkspace/reddwarf/testhost/testproject/test.eg";
+    const path pResult = "reddwarf/testhost/testproject/test.eg";
+    ASSERT_EQ( pResult, edsInclude( pFolder, pInclude ) );
+}
+
+
 TEST( FileUtils, loadAsciiFile1 )
 {
     //hmmm?

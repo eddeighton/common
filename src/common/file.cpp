@@ -52,7 +52,7 @@ boost::filesystem::path edsCannonicalise( const boost::filesystem::path& path )
 }
 
 boost::filesystem::path edsInclude(
-    const boost::filesystem::path& file, const boost::filesystem::path& include )
+    const boost::filesystem::path& fileOrFolder, const boost::filesystem::path& include )
 {
     boost::filesystem::path pResult;
 
@@ -61,15 +61,35 @@ boost::filesystem::path edsInclude(
 
     //since the file paths are absolute they must contain the same root component up to the point they diverge
     boost::filesystem::path::const_iterator
-        i = file.begin(), iEnd = file.end(),
+        i = fileOrFolder.begin(), iEnd = fileOrFolder.end(),
         j = include.begin(), jEnd = include.end();
     //so iterate until they become different
     for( ; i!=iEnd && j!=jEnd && *i == *j; ++i, ++j ){}
 
+	bool bIsRegularFile = false;
+	if( boost::filesystem::exists( fileOrFolder ) )
+	{
+		bIsRegularFile = boost::filesystem::is_regular_file( fileOrFolder );
+	}
+	else
+	{
+		//resort to extension
+		bIsRegularFile = fileOrFolder.has_extension() || fileOrFolder.filename_is_dot();
+	}
+	
     //then for the remaining parts of the file path append ../ to the result path
-    for( ; i!=iEnd;  )
+    for( ; i != iEnd;  )
     {
-        if( ++i == iEnd ) break;
+		++i;
+		
+		if( bIsRegularFile )
+		{
+			if( i == iEnd )
+			{
+				break;
+			}
+		}
+		
         pResult /= "..";
     }
 

@@ -39,7 +39,7 @@ namespace filesystem
 boost::filesystem::path edsCannonicalise( const boost::filesystem::path& path );
 
 boost::filesystem::path edsInclude(
-    const boost::filesystem::path& file, const boost::filesystem::path& include );
+    const boost::filesystem::path& fileOrFolder, const boost::filesystem::path& include );
 
 void loadAsciiFile( const boost::filesystem::path& filePath, std::string& strFileData, bool bAddCR = true );
 
