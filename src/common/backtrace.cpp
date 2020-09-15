@@ -22,6 +22,8 @@
 Copyright Deighton Systems Limited (c) 2016
 */
 
+//#include <boost/stacktrace.hpp>
+
 #include "common/backtrace.hpp"
 #include "common/assert_verify.hpp"
 
@@ -84,6 +86,7 @@ namespace Common
     //windows
     void getBackTrace( std::ostream& os )
     {
+        //os << boost::stacktrace::stacktrace();
         IMAGEHLP_LINE64 line;
         SymSetOptions(SYMOPT_LOAD_LINES);
         line.SizeOfStruct = sizeof(IMAGEHLP_LINE64);
@@ -174,6 +177,7 @@ namespace Common
     
     void getBackTrace( std::ostream& os )
     {
+        //os << boost::stacktrace::stacktrace();
     }
 
     void debug_break()
