@@ -170,10 +170,11 @@ void Scheduler::thread_run()
     }
 }
 
-void Scheduler::run()
+void Scheduler::run( std::optional< unsigned int > maxThreads )
 {
     std::vector< std::thread > threads;
-    const unsigned int nMaxThreads = std::thread::hardware_concurrency();
+    const unsigned int nMaxThreads = 
+        maxThreads.has_value() ? maxThreads.value() : std::thread::hardware_concurrency();
     for( int i = 0; i < nMaxThreads; ++i )
     {
         threads.push_back( 

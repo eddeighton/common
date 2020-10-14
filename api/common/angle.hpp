@@ -5,8 +5,9 @@ Copyright Deighton Systems Limited (c) 2015
 #ifndef DISCRETE_ANGLE_15_09_2013
 #define DISCRETE_ANGLE_15_09_2013
 
-#define _USE_MATH_DEFINES
 #include <cmath>
+
+#define MY_PI 3.14159265358979323846
 
 #include "rounding.hpp"
 #include "assert_verify.hpp"
@@ -90,7 +91,7 @@ inline typename TAngleTraits::Value opposite( typename TAngleTraits::Value v )
 template< class TAngleTraits, class TValueType >
 inline void toVector( typename TAngleTraits::Value v, TValueType& x, TValueType& y )
 {
-    const double angle = TValueType( v ) * TValueType( M_PI ) * TValueType( 2 ) / 
+    const double angle = TValueType( v ) * TValueType( MY_PI ) * TValueType( 2 ) / 
         static_cast< TValueType >( TAngleTraits::TOTAL_ANGLES );
     x = cos( angle );
     y = sin( angle );
@@ -99,7 +100,7 @@ inline void toVector( typename TAngleTraits::Value v, TValueType& x, TValueType&
 template< class TAngleTraits, class TValueType >
 inline void toVectorDiscrete( typename TAngleTraits::Value v, TValueType& x, TValueType& y )
 {
-    const double angle = v * M_PI * 2.0 / TAngleTraits::TOTAL_ANGLES;
+    const double angle = v * MY_PI * 2.0 / TAngleTraits::TOTAL_ANGLES;
     x = TValueType( roundRealOutToInt( cos( angle ) ) );
     y = TValueType( roundRealOutToInt( sin( angle ) ) );
 }
@@ -139,7 +140,7 @@ template< class TAngleTraits, class TValueType >
 inline typename TAngleTraits::Value fromVector( TValueType x, TValueType y )
 {
     const double angle = atan2( y, x );///Y FIRST!!!! THEN X WTF!!!
-    const double d = ( TAngleTraits::TOTAL_ANGLES * angle ) / ( TValueType( M_PI ) * TValueType( 2 ) );
+    const double d = ( TAngleTraits::TOTAL_ANGLES * angle ) / ( TValueType( MY_PI ) * TValueType( 2 ) );
     const unsigned int ui = roundPositiveRealToUInt( mapToRange< double >( d, TAngleTraits::TOTAL_ANGLES ) );
     return static_cast< typename TAngleTraits::Value >( ui % TAngleTraits::TOTAL_ANGLES );
 }

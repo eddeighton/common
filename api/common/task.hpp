@@ -10,6 +10,7 @@
 #include <memory>
 #include <mutex>
 #include <ostream>
+#include <optional>
 
 namespace task
 {
@@ -75,7 +76,7 @@ namespace task
     public:
         Scheduler( std::ostream& log, const Task::PtrVector& tasks );
         
-        void run();
+        void run( std::optional< unsigned int > maxThreads = std::optional< unsigned int >() );
         
     private:
         void thread_run();
