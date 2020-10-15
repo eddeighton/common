@@ -212,12 +212,17 @@ std::size_t hash_file( const boost::filesystem::path& file )
 {
     if( boost::filesystem::exists( file ) )
     {
-        boost::iostreams::mapped_file_source fileData( file );
-        
-        const std::string_view dataView( fileData.data(), fileData.size() );
-        
-        return std::hash< std::string_view >{}( dataView );
-        
+        //error seems to occur if attempt to memory map an empty file
+        if( boost::filesystem::is_empty( file ) )
+        {
+            return boost::filesystem::hash_value( file );
+        }
+        else
+        {
+            boost::iostreams::mapped_file_source fileData( file/*, boost::iostreams::mapped_file::readonly*/ );
+            const std::string_view dataView( fileData.data(), fileData.size() );
+            return std::hash< std::string_view >{}( dataView );
+        }
     }
     THROW_RTE( "File does not exist: " << file.string() );
 }

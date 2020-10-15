@@ -97,6 +97,12 @@ inline void toVector( typename TAngleTraits::Value v, TValueType& x, TValueType&
     y = sin( angle );
 }
 
+template< class TAngleTraits, class TVectorType >
+inline void toVector( typename TAngleTraits::Value v, TVectorType& vector )
+{
+    toVector< TAngleTraits >( v, vector.x, vector.y );
+}
+
 template< class TAngleTraits, class TValueType >
 inline void toVectorDiscrete( typename TAngleTraits::Value v, TValueType& x, TValueType& y )
 {
@@ -143,6 +149,12 @@ inline typename TAngleTraits::Value fromVector( TValueType x, TValueType y )
     const double d = ( TAngleTraits::TOTAL_ANGLES * angle ) / ( TValueType( MY_PI ) * TValueType( 2 ) );
     const unsigned int ui = roundPositiveRealToUInt( mapToRange< double >( d, TAngleTraits::TOTAL_ANGLES ) );
     return static_cast< typename TAngleTraits::Value >( ui % TAngleTraits::TOTAL_ANGLES );
+}
+
+template< class TAngleTraits, class TVectorType >
+inline typename TAngleTraits::Value fromVector( const TVectorType& vector )
+{
+    return fromVector< TAngleTraits >( vector.x, vector.y );
 }
 
 }
