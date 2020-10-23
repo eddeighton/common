@@ -56,7 +56,7 @@ namespace Common
         {
             std::cout << "\n!!!!!!!!!ERROR!!!!!!!!:\n" << pszFile << ":" << uiLine << ":" << pszFunction << ":" << pszMsg;
             
-            if( uiType == _CRT_ERROR )
+            //if( uiType == _CRT_ERROR )
             {
                 std::ostringstream os;
                 os << "File: " << pszFile << ":" << uiLine << "\n" <<
@@ -76,10 +76,10 @@ namespace Common
                         return;
                 }
             }
-            else
+            /*else
             {
                 _CrtDbgBreak(); 
-            }
+            }*/
         }
     }
 
