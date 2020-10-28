@@ -2,6 +2,8 @@
 #ifndef TASK_TOOLS_14_OCT_2020
 #define TASK_TOOLS_14_OCT_2020
 
+#include "common/hash.hpp"
+
 #include <boost/filesystem/path.hpp>
 
 #include <string>
@@ -88,23 +90,18 @@ namespace task
         std::mutex m_mutex;
     };
     
-    using HashCode = std::size_t;
-    HashCode hash_strings( const std::vector< std::string >& strings );
-    HashCode hash_file( const boost::filesystem::path& file );
-    HashCode hash_combine( HashCode left, HashCode right );
-    
     class Stash
     {
     public:
         Stash( const boost::filesystem::path& stashDirectory );
         
-        HashCode getHashCode( const boost::filesystem::path& key ) const;
-        void setHashCode( const boost::filesystem::path& key, HashCode hashCode );
+        common::HashCode getHashCode( const boost::filesystem::path& key ) const;
+        void setHashCode( const boost::filesystem::path& key, common::HashCode hashCode );
         void loadHashCodes( const boost::filesystem::path& file );
         void saveHashCodes( const boost::filesystem::path& file ) const;
         
-        void stash( const boost::filesystem::path& file, const HashCode& code );
-        bool restore( const boost::filesystem::path& file, const HashCode& code );
+        void stash( const boost::filesystem::path& file, const common::HashCode& code );
+        bool restore( const boost::filesystem::path& file, const common::HashCode& code );
     private:
         struct Pimpl;
         std::shared_ptr< Pimpl > m_pPimpl;
