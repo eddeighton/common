@@ -5,7 +5,6 @@
 
 #include <gtest/gtest.h>
 
-#include <boost/bind.hpp>
 #include <boost/program_options.hpp>
 
 #include <iostream>

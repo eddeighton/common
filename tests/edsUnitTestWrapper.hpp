@@ -22,7 +22,6 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/algorithm/string.hpp>
-#include <boost/bind.hpp>
 
 #include <gtest/gtest.h>
 
@@ -143,7 +142,7 @@ inline std::string style_replace_non_alpha_numeric( const std::string& str, char
     std::string strResult;
 	//no overloaded operators on std::bind so use boost::bind for the not (!)
     std::replace_copy_if( str.begin(), str.end(), std::back_inserter( strResult ), 
-                          !boost::bind( &eds_isalnum, /*std::placeholders::*/ _1 ), r );
+        []( const char c ){ return !eds_isalnum( c ); }, r );
     return strResult;
 }
 

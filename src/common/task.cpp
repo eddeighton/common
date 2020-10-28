@@ -149,7 +149,9 @@ void Scheduler::thread_run()
                 }
                 catch( std::exception& ex )
                 {
-                    m_log << "ERROR in task: " << ex.what() << std::endl;
+                    m_log << "ERROR in task: " << pTaskTodo->getTaskInfo().taskName() << "\n" <<
+                            pTaskTodo->getTaskInfo().source() << " -> " << pTaskTodo->getTaskInfo().target() << "\n" <<
+                            ex.what() << std::endl;
                     throw;
                 }
                 
