@@ -391,6 +391,7 @@ struct Stash::Pimpl
                 {
                     boost::filesystem::remove( file );
                 }
+                ensureFoldersExist( file );
                 //recheck the hash code??
                 boost::filesystem::copy( stashFile, file );
                 return true;

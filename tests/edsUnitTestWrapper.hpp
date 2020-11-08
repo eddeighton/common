@@ -140,7 +140,6 @@ inline int eds_isalnum( int ch )
 inline std::string style_replace_non_alpha_numeric( const std::string& str, char r )
 {
     std::string strResult;
-	//no overloaded operators on std::bind so use boost::bind for the not (!)
     std::replace_copy_if( str.begin(), str.end(), std::back_inserter( strResult ), 
         []( const char c ){ return !eds_isalnum( c ); }, r );
     return strResult;
