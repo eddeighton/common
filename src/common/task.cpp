@@ -36,6 +36,12 @@ public:
         static const int taskPadding = 25;
         static const int pathPadding = 110;
         static const int timePadding = 10;
+        
+        for( const std::string& strMsg : m_taskInfo.msgs() )
+        {
+            m_log << m_taskInfo.taskName() << ": " << strMsg << std::endl;
+        }
+        
         if( m_taskInfo.cached() )
         {
             timer_internal.stop();
