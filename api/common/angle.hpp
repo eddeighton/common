@@ -88,11 +88,16 @@ inline typename TAngleTraits::Value opposite( typename TAngleTraits::Value v )
     return rotate< TAngleTraits >( v, TAngleTraits::TOTAL_ANGLES / 2 );
 }
 
+template< class TAngleTraits >
+inline double toRadians( typename TAngleTraits::Value v )
+{
+    return ( v * MY_PI * 2.0f ) / TAngleTraits::TOTAL_ANGLES;
+}
+
 template< class TAngleTraits, class TValueType >
 inline void toVector( typename TAngleTraits::Value v, TValueType& x, TValueType& y )
 {
-    const double angle = TValueType( v ) * TValueType( MY_PI ) * TValueType( 2 ) / 
-        static_cast< TValueType >( TAngleTraits::TOTAL_ANGLES );
+    const double angle = toRadians< TAngleTraits >( v );
     x = cos( angle );
     y = sin( angle );
 }
