@@ -2,6 +2,7 @@
 #include "common/task.hpp"
 #include "common/assert_verify.hpp"
 #include "common/file.hpp"
+#include "common/terminal.hpp"
 
 #include "boost/tokenizer.hpp"
 #include "boost/filesystem.hpp"
@@ -154,9 +155,10 @@ void Scheduler::thread_run()
                 }
                 catch( std::exception& ex )
                 {
-                    m_log << "ERROR in task: " << pTaskTodo->getTaskInfo().taskName() << "\n" <<
+                    m_log << common::RED_BEGIN <<
+                            "ERROR in task: " << pTaskTodo->getTaskInfo().taskName() << "\n" <<
                             pTaskTodo->getTaskInfo().source() << " -> " << pTaskTodo->getTaskInfo().target() << "\n" <<
-                            ex.what() << std::endl;
+                            ex.what() << common::RED_END << "\n" << std::endl;
                     throw;
                 }
                 
