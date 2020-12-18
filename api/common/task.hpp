@@ -95,10 +95,10 @@ namespace task
     public:
         Stash( const boost::filesystem::path& stashDirectory );
         
-        common::HashCode getHashCode( const boost::filesystem::path& key ) const;
-        void setHashCode( const boost::filesystem::path& key, common::HashCode hashCode );
-        void loadHashCodes( const boost::filesystem::path& file );
-        void saveHashCodes( const boost::filesystem::path& file ) const;
+        common::HashCode getBuildHashCode( const boost::filesystem::path& key ) const;
+        void setBuildHashCode( const boost::filesystem::path& key, common::HashCode hashCode );
+        void loadBuildHashCodes( const boost::filesystem::path& file );
+        void saveBuildHashCodes( const boost::filesystem::path& file ) const;
         
         void stash( const boost::filesystem::path& file, const common::HashCode& code );
         bool restore( const boost::filesystem::path& file, const common::HashCode& code );
