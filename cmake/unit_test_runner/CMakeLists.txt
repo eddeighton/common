@@ -22,7 +22,8 @@ set( COMMON_UNIT_TESTS
 	 ${COMMON_TEST_DIR}/math_tests.cpp
 	 ${COMMON_TEST_DIR}/preprocessor_tests.cpp
 	 ${COMMON_TEST_DIR}/rounding_tests.cpp
-	 ${COMMON_TEST_DIR}/tuple_tests.cpp )
+	 ${COMMON_TEST_DIR}/tuple_tests.cpp
+	 ${COMMON_TEST_DIR}/scheduler_tests.cpp )
 
 add_executable( common_tests ${COMMON_UNIT_TESTS} ${COMMON_TEST_DIR}/main_test_runner.cpp )
 

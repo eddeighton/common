@@ -72,7 +72,7 @@ namespace task
         TaskInfo m_taskInfo;
         RawPtrSet m_dependencies;
     };
-    
+    /*
     class Scheduler
     {
     public:
@@ -88,7 +88,7 @@ namespace task
         Task::PtrVector m_tasks;
         Task::RawPtrSet m_pending, m_finished;
         std::mutex m_mutex;
-    };
+    };*/
     
     class Stash
     {

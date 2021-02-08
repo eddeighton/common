@@ -25,6 +25,7 @@ set_target_properties( commonlib PROPERTIES FOLDER common )
 
 link_boost( commonlib filesystem )
 link_boost( commonlib system )
+link_boost( commonlib timer )
 
 set( InstalledHeaders ${COMMON_INCLUDE_HEADERS} )
 
