@@ -71,6 +71,17 @@ namespace task
             std::bind( &Scheduler::ScheduleRun::progress, this ) );
     }
     
+    void Scheduler::ScheduleRun::taskFailed( Task::RawPtr pTask )
+    {
+        //std::cout << "ScheduleRun::taskCompleted()" << std::endl;
+        
+        {
+            std::lock_guard< std::mutex > lock( m_mutex );
+            m_pending.clear();
+        }
+    }
+    
+    
     void Scheduler::ScheduleRun::progress()
     {
         //std::cout << "ScheduleRun::run()" << std::endl;
@@ -110,10 +121,21 @@ namespace task
                     ( 
                         [ pRun, pTask ]()
                         {
-                            pTask->run();
+                            TaskProgress progress;
                             
-                            pRun->m_scheduler.m_queue.post( 
-                                std::bind( &Scheduler::ScheduleRun::taskCompleted, pRun, pTask ) );
+                            try
+                            {
+                                pTask->run( progress );
+                                
+                                pRun->m_scheduler.m_queue.post( 
+                                    std::bind( &Scheduler::ScheduleRun::taskCompleted, pRun, pTask ) );
+                            }
+                            catch( std::exception& ex )
+                            {
+                                
+                                pRun->m_scheduler.m_queue.post( 
+                                    std::bind( &Scheduler::ScheduleRun::taskFailed, pRun, pTask ) );
+                            }
                         }
                     );
                 }
@@ -125,6 +147,8 @@ namespace task
         }
     }
     
+    ///////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
     Scheduler::Scheduler( std::optional< unsigned int > maxThreads )
 		:	m_stop( false ),
 			m_keepAliveTimer( m_queue, KEEP_ALIVE_RATE )

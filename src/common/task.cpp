@@ -16,7 +16,7 @@
 
 namespace task
 {
-    
+    /*
 class TaskInfo::TaskInfoPimpl
 {
     const TaskInfo& m_taskInfo;
@@ -82,12 +82,50 @@ void TaskInfo::update()
 {
     m_pPimpl->update();
 }
+        */
         
+TaskProgress::TaskProgress()
+{
+    m_timer_internal.start();
+}
+TaskProgress::~TaskProgress()
+{
+}
+
+void TaskProgress::taskName( const std::string& strTaskName )    
+{
+}
+void TaskProgress::source( const std::string& strSource )        
+{
+}
+void TaskProgress::source( const boost::filesystem::path& file ) 
+{
+}
+void TaskProgress::target( const std::string& strTarget )        
+{
+}
+void TaskProgress::target( const boost::filesystem::path& file ) 
+{
+}
+void TaskProgress::cached( bool bCached )                        
+{
+    if( bCached )
+    {
+        m_timer_internal.stop();
+    }
+}
+void TaskProgress::complete( bool bComplete )                    
+{
+    m_timer_internal.stop();
+}
+void TaskProgress::msg( const std::string& strMsg )              
+{
+}
+
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
-Task::Task( std::ostream& log, const RawPtrSet& dependencies )
-    :   m_taskInfo( log ),
-        m_dependencies( dependencies )
+Task::Task( const RawPtrSet& dependencies )
+    :   m_dependencies( dependencies )
 {
     
 }

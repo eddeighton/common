@@ -12,7 +12,7 @@ class TestTask : public task::Task
     const char* m_pszStr;
 public:
     TestTask( const char* pszStr, std::ostream& log, const task::Task::RawPtrSet& dependencies )
-        :   Task( log, dependencies ),
+        :   Task( dependencies ),
             m_pszStr( pszStr )
     {
         

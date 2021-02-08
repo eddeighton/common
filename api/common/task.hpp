@@ -5,6 +5,7 @@
 #include "common/hash.hpp"
 
 #include <boost/filesystem/path.hpp>
+#include "boost/timer/timer.hpp"
 
 #include <string>
 #include <vector>
@@ -16,6 +17,7 @@
 
 namespace task
 {
+    /*
     class TaskInfo
     {
         std::string m_strTaskName, m_strSource, m_strTarget;
@@ -32,12 +34,12 @@ namespace task
         
         void update();
         
-        const std::string& taskName() const             { std::lock_guard< std::mutex > lock( m_mutex ); return m_strTaskName;         }
-        const std::string& source() const               { std::lock_guard< std::mutex > lock( m_mutex ); return m_strSource;           }
-        const std::string& target() const               { std::lock_guard< std::mutex > lock( m_mutex ); return m_strTarget;           }
-        const bool cached() const                       { std::lock_guard< std::mutex > lock( m_mutex ); return m_bCached;             }
-        const bool complete() const                     { std::lock_guard< std::mutex > lock( m_mutex ); return m_bComplete;           }
-        const std::vector< std::string >& msgs() const  { std::lock_guard< std::mutex > lock( m_mutex ); return m_msgs;                }
+        const std::string& taskName() const                     { std::lock_guard< std::mutex > lock( m_mutex ); return m_strTaskName;          }
+        const std::string& source() const                       { std::lock_guard< std::mutex > lock( m_mutex ); return m_strSource;            }
+        const std::string& target() const                       { std::lock_guard< std::mutex > lock( m_mutex ); return m_strTarget;            }
+        const bool cached() const                               { std::lock_guard< std::mutex > lock( m_mutex ); return m_bCached;              }
+        const bool complete() const                             { std::lock_guard< std::mutex > lock( m_mutex ); return m_bComplete;            }
+        const std::vector< std::string >& msgs() const          { std::lock_guard< std::mutex > lock( m_mutex ); return m_msgs;                 }
         
         void taskName( const std::string& strTaskName )         { std::lock_guard< std::mutex > lock( m_mutex ); m_strTaskName = strTaskName;   }
         void source( const std::string& strSource )             { std::lock_guard< std::mutex > lock( m_mutex ); m_strSource = strSource;       }
@@ -47,6 +49,27 @@ namespace task
         void cached( bool bCached )                             { std::lock_guard< std::mutex > lock( m_mutex ); m_bCached = bCached;           }
         void complete( bool bComplete )                         { std::lock_guard< std::mutex > lock( m_mutex ); m_bComplete = bComplete;       }
         void msg( const std::string& strMsg )                   { std::lock_guard< std::mutex > lock( m_mutex ); m_msgs.push_back( strMsg );    }
+    };*/
+    
+    class TaskProgress
+    {
+    public:
+        TaskProgress();
+        ~TaskProgress();
+        
+        void taskName( const std::string& strTaskName )    ;
+        void source( const std::string& strSource )        ;
+        void source( const boost::filesystem::path& file ) ;
+        void target( const std::string& strTarget )        ;
+        void target( const boost::filesystem::path& file ) ;
+        
+        void cached( bool bCached )                        ;
+        void complete( bool bComplete )                    ;
+        
+        void msg( const std::string& strMsg )              ;
+    private:
+        
+        boost::timer::cpu_timer m_timer_internal;
     };
     
     class Task
@@ -57,38 +80,17 @@ namespace task
         using RawPtr = Task*;
         using RawPtrSet = std::set< RawPtr >;
         
-        Task( std::ostream& log, const RawPtrSet& dependencies );
+        Task( const RawPtrSet& dependencies );
         
         virtual ~Task();
         
         virtual bool isReady( const RawPtrSet& finished );
-        virtual void run() = 0;
-        
-        TaskInfo& getTaskInfo() { return m_taskInfo; }
-        
-        void updateProgress() { m_taskInfo.update(); }
+        virtual void run( TaskProgress& taskProgress ) = 0;
         
     protected:
-        TaskInfo m_taskInfo;
         RawPtrSet m_dependencies;
     };
-    /*
-    class Scheduler
-    {
-    public:
-        Scheduler( std::ostream& log, const Task::PtrVector& tasks );
-        
-        void run( std::optional< unsigned int > maxThreads = std::optional< unsigned int >() );
-        
-    private:
-        void thread_run();
     
-    private:
-        std::ostream& m_log;
-        Task::PtrVector m_tasks;
-        Task::RawPtrSet m_pending, m_finished;
-        std::mutex m_mutex;
-    };*/
     
     class Stash
     {

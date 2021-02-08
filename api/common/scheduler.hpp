@@ -43,6 +43,7 @@ namespace task
             ScheduleRun( Scheduler& scheduler, Schedule::Ptr pSchedule );
             
             void taskCompleted( Task::RawPtr pTask );
+            void taskFailed( Task::RawPtr pTask );
             void progress();
         private:
             Scheduler& m_scheduler;
