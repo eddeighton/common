@@ -45,11 +45,14 @@ namespace task
             void taskCompleted( Task::RawPtr pTask );
             void taskFailed( Task::RawPtr pTask );
             void progress();
+            
+            std::future< bool > getFuture() { return m_promise.get_future(); }
         private:
             Scheduler& m_scheduler;
             Schedule::Ptr m_pSchedule;
-            Task::RawPtrSet m_pending, m_finished;
+            Task::RawPtrSet m_pending, m_active, m_finished;
             std::mutex m_mutex;
+            std::promise< bool > m_promise;
         };
         
     public:
@@ -58,10 +61,16 @@ namespace task
     private:
         using ScheduleRunMap = std::map< ScheduleOwner, ScheduleRun::Ptr >;
     public:
-        Scheduler( TaskProgressFIFO& fifo, std::optional< unsigned int > maxThreads );
+
+        //using namespace std::chrono_literals;
+        //static const auto DEFAULT_ALIVE_RATE = 250ms;
+        
+        Scheduler( TaskProgressFIFO& fifo, 
+            std::chrono::milliseconds keepAliveRate, 
+            std::optional< unsigned int > maxThreads );
         ~Scheduler();
         
-        void run( ScheduleOwner pOwner, Schedule::Ptr pSchedule );
+        std::future< bool > run( ScheduleOwner pOwner, Schedule::Ptr pSchedule );
         void stop();
         
     //private: use of functional prevents visibility control
@@ -71,6 +80,7 @@ namespace task
         TaskProgressFIFO& m_fifo;
         std::atomic< bool > m_stop;
         boost::asio::io_context m_queue;
+        std::chrono::milliseconds m_keepAliveRate;
         boost::asio::steady_timer m_keepAliveTimer;
         std::vector< std::thread > m_threads;
         ScheduleRunMap m_runs;

@@ -24,12 +24,6 @@
 		}                                                                                 \
 	)
 
-using namespace std::chrono_literals;
-
-namespace 
-{
-	static const auto KEEP_ALIVE_RATE = 250ms;
-}
     
 namespace task
 {
@@ -60,32 +54,41 @@ namespace task
     
     void Scheduler::ScheduleRun::taskCompleted( Task::RawPtr pTask )
     {
-        //std::cout << "ScheduleRun::taskCompleted()" << std::endl;
-        
+        bool bRemaining = true;
         {
             std::lock_guard< std::mutex > lock( m_mutex );
+            Task::RawPtrSet::iterator iFind = m_active.find( pTask );
+            VERIFY_RTE_MSG( iFind != m_active.end(), "Failed to find task in active set" );
+            m_active.erase( iFind );
             m_finished.insert( pTask );
+            
+            if( m_pending.empty() && m_active.empty() )
+            {
+                m_promise.set_value( true );
+                bRemaining = false;
+            }
         }
         
-		m_scheduler.m_queue.post( 
-            std::bind( &Scheduler::ScheduleRun::progress, this ) );
+        if( bRemaining )
+        {
+            m_scheduler.m_queue.post( 
+                std::bind( &Scheduler::ScheduleRun::progress, this ) );
+        }
     }
     
     void Scheduler::ScheduleRun::taskFailed( Task::RawPtr pTask )
     {
-        //std::cout << "ScheduleRun::taskCompleted()" << std::endl;
-        
         {
             std::lock_guard< std::mutex > lock( m_mutex );
+            Task::RawPtrSet::iterator iFind = m_active.find( pTask );
+            VERIFY_RTE_MSG( iFind != m_active.end(), "Failed to find task in active set" );
+            m_active.erase( iFind );
             m_pending.clear();
         }
     }
     
-    
     void Scheduler::ScheduleRun::progress()
     {
-        //std::cout << "ScheduleRun::run()" << std::endl;
-        
         Task::RawPtrSet ready;
         {
             std::lock_guard< std::mutex > lock( m_mutex );
@@ -98,6 +101,7 @@ namespace task
                     if( pTask->isReady( m_finished ) )
                     {
                         ready.insert( pTask );
+                        m_active.insert( pTask );
                     }
                 }
                 for( Task::RawPtr pTask : ready )
@@ -110,8 +114,6 @@ namespace task
         //schedule tasks
         if( !ready.empty() )
         {
-            //std::cout << "ScheduleRun::run() incomplete: " << ready.size() << std::endl;
-            
             TaskProgressFIFO* pFIFO = &m_scheduler.m_fifo;
             Scheduler::ScheduleRun* pRun = this;
             
@@ -133,27 +135,29 @@ namespace task
                             }
                             catch( std::exception& ex )
                             {
+                                progress.complete( false );
                                 
                                 pRun->m_scheduler.m_queue.post( 
                                     std::bind( &Scheduler::ScheduleRun::taskFailed, pRun, pTask ) );
+                                    
+                                pRun->m_promise.set_exception( std::current_exception() );
                             }
                         }
                     );
                 }
             }
         }
-        else
-        {
-            //std::cout << "ScheduleRun::run() complete" << std::endl;
-        }
     }
     
     ///////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////
-    Scheduler::Scheduler( TaskProgressFIFO& fifo, std::optional< unsigned int > maxThreads )
+    Scheduler::Scheduler( TaskProgressFIFO& fifo, 
+                    std::chrono::milliseconds keepAliveRate, 
+                    std::optional< unsigned int > maxThreads )
 		:	m_fifo( fifo ),
             m_stop( false ),
-			m_keepAliveTimer( m_queue, KEEP_ALIVE_RATE )
+			m_keepAliveRate( keepAliveRate ),
+            m_keepAliveTimer( m_queue, keepAliveRate )
     {
 		{
 			using namespace std::placeholders;
@@ -188,7 +192,7 @@ namespace task
 	{
 		if( !m_stop && ec.value() == boost::system::errc::success )
 		{
-			m_keepAliveTimer.expires_at( m_keepAliveTimer.expiry() + KEEP_ALIVE_RATE );
+			m_keepAliveTimer.expires_at( m_keepAliveTimer.expiry() + m_keepAliveRate );
 			using namespace std::placeholders;
 			m_keepAliveTimer.async_wait( std::bind( &Scheduler::OnKeepAlive, this, _1 ) );
 		}
@@ -198,13 +202,15 @@ namespace task
         }
 	}
     
-    void Scheduler::run( ScheduleOwner pOwner, Schedule::Ptr pSchedule )
+    std::future< bool > Scheduler::run( ScheduleOwner pOwner, Schedule::Ptr pSchedule )
     {
         ScheduleRun::Ptr pScheduleRun( new ScheduleRun( *this, pSchedule ) );
         
         m_runs.insert( std::make_pair( pOwner, pScheduleRun ) );
         
 		m_queue.post( std::bind( &Scheduler::ScheduleRun::progress, pScheduleRun ) );
+        
+        return pScheduleRun->getFuture();
     }
     
     void Scheduler::stop()
