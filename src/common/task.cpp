@@ -68,58 +68,55 @@ public:
     }
     
 };
-    
+    */
     
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
-TaskInfo::TaskInfo( std::ostream& log )
-    :   m_pPimpl( std::make_shared< TaskInfoPimpl >( *this, log ) )
+
+NotifiedTaskProgress::NotifiedTaskProgress( TaskProgressFIFO& fifo )
+    :   m_fifo( fifo )
 {
-    
+    m_timer.start();
 }
-    
-void TaskInfo::update()
-{
-    m_pPimpl->update();
-}
-        */
         
-TaskProgress::TaskProgress()
+void NotifiedTaskProgress::setTaskInfo( const std::string& strTaskName, 
+        const std::string& strSource, const std::string& strTarget )
 {
-    m_timer_internal.start();
-}
-TaskProgress::~TaskProgress()
-{
+    m_progress.m_strTaskName        = strTaskName;
+    m_progress.m_optSourceString    = strSource;
+    m_progress.m_optTargetString    = strTarget;
+    m_fifo.push( m_progress );
 }
 
-void TaskProgress::taskName( const std::string& strTaskName )    
+void NotifiedTaskProgress::setTaskInfo( const std::string& strTaskName, 
+        const boost::filesystem::path& fileSource, const std::string& fileTarget )
 {
+    m_progress.m_strTaskName        = strTaskName;
+    m_progress.m_optSourcePath      = fileSource;
+    m_progress.m_optTargetPath      = fileTarget;
+    m_fifo.push( m_progress );
 }
-void TaskProgress::source( const std::string& strSource )        
+
+void NotifiedTaskProgress::cached( bool bCached )                        
 {
-}
-void TaskProgress::source( const boost::filesystem::path& file ) 
-{
-}
-void TaskProgress::target( const std::string& strTarget )        
-{
-}
-void TaskProgress::target( const boost::filesystem::path& file ) 
-{
-}
-void TaskProgress::cached( bool bCached )                        
-{
+    m_progress.m_bCached = bCached;
     if( bCached )
     {
-        m_timer_internal.stop();
+        m_timer.stop();
     }
+    m_fifo.push( m_progress );
 }
-void TaskProgress::complete( bool bComplete )                    
+void NotifiedTaskProgress::complete( bool bComplete )                    
 {
-    m_timer_internal.stop();
+    m_progress.m_bComplete = bComplete;
+    m_timer.stop();
+    m_fifo.push( m_progress );
 }
-void TaskProgress::msg( const std::string& strMsg )              
+
+void NotifiedTaskProgress::msg( const std::string& strMsg )              
 {
+    m_progress.m_msgs.push_back( strMsg );
+    m_fifo.push( m_progress );
 }
 
 //////////////////////////////////////////////////////////////////////////////

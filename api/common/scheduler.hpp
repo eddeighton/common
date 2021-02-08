@@ -58,7 +58,7 @@ namespace task
     private:
         using ScheduleRunMap = std::map< ScheduleOwner, ScheduleRun::Ptr >;
     public:
-        Scheduler( std::optional< unsigned int > maxThreads );
+        Scheduler( TaskProgressFIFO& fifo, std::optional< unsigned int > maxThreads );
         ~Scheduler();
         
         void run( ScheduleOwner pOwner, Schedule::Ptr pSchedule );
@@ -68,6 +68,7 @@ namespace task
         void OnKeepAlive( const boost::system::error_code& ec );
         
     private:
+        TaskProgressFIFO& m_fifo;
         std::atomic< bool > m_stop;
         boost::asio::io_context m_queue;
         boost::asio::steady_timer m_keepAliveTimer;

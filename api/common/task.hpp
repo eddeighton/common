@@ -14,6 +14,7 @@
 #include <mutex>
 #include <ostream>
 #include <optional>
+#include <deque>
 
 namespace task
 {
@@ -51,26 +52,81 @@ namespace task
         void msg( const std::string& strMsg )                   { std::lock_guard< std::mutex > lock( m_mutex ); m_msgs.push_back( strMsg );    }
     };*/
     
+    
+    
     class TaskProgress
     {
     public:
-        TaskProgress();
-        ~TaskProgress();
+        std::string m_strTaskName;
+        std::optional< std::string > m_optSourceString;
+        std::optional< boost::filesystem::path > m_optSourcePath;
+        std::optional< std::string > m_optTargetString;
+        std::optional< boost::filesystem::path > m_optTargetPath;
         
-        void taskName( const std::string& strTaskName )    ;
-        void source( const std::string& strSource )        ;
-        void source( const boost::filesystem::path& file ) ;
-        void target( const std::string& strTarget )        ;
-        void target( const boost::filesystem::path& file ) ;
+        std::optional< bool > m_bCached;
+        std::optional< bool > m_bComplete;
+        std::vector< std::string > m_msgs;
         
-        void cached( bool bCached )                        ;
-        void complete( bool bComplete )                    ;
+    };
+    
+    class TaskProgressFIFO
+    {
+    public:
+    
+        bool empty() const
+        {
+            std::lock_guard< std::mutex > lock( m_mutex );
+            return m_fifo.empty();
+        }
+    
+        void push( const TaskProgress& taskProgress )
+        {
+            std::lock_guard< std::mutex > lock( m_mutex );
+            m_fifo.push_back( taskProgress );
+        }
         
-        void msg( const std::string& strMsg )              ;
+        TaskProgress pop()
+        {
+            std::lock_guard< std::mutex > lock( m_mutex );
+            TaskProgress front = m_fifo.front();
+            m_fifo.pop_front();
+            return front;
+        }
+        
+    
+    private:
+        mutable std::mutex m_mutex;
+        std::deque< TaskProgress > m_fifo;
+    };
+    
+    class NotifiedTaskProgress
+    {
+    public:
+        NotifiedTaskProgress( TaskProgressFIFO& fifo );
+        
+        void setTaskInfo( const std::string& strTaskName, const std::string& strSource, const std::string& strTarget );
+        void setTaskInfo( const std::string& strTaskName, const boost::filesystem::path& fileSource, const std::string& fileTarget );
+        
+        void cached( bool bCached );
+        void complete( bool bComplete );
+        
+        void msg( const std::string& strMsg );
     private:
         
-        boost::timer::cpu_timer m_timer_internal;
+    private:
+        TaskProgressFIFO& m_fifo;
+        boost::timer::cpu_timer m_timer;
+        TaskProgress m_progress;
     };
+    
+    /*
+    class TimedProgress : public TaskProgress
+    {
+    public:
+        TimedProgress();
+        
+    private:
+    };*/
     
     class Task
     {
@@ -85,7 +141,7 @@ namespace task
         virtual ~Task();
         
         virtual bool isReady( const RawPtrSet& finished );
-        virtual void run( TaskProgress& taskProgress ) = 0;
+        virtual void run( NotifiedTaskProgress& taskProgress ) = 0;
         
     protected:
         RawPtrSet m_dependencies;

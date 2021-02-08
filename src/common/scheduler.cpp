@@ -112,6 +112,7 @@ namespace task
         {
             //std::cout << "ScheduleRun::run() incomplete: " << ready.size() << std::endl;
             
+            TaskProgressFIFO* pFIFO = &m_scheduler.m_fifo;
             Scheduler::ScheduleRun* pRun = this;
             
             {
@@ -119,9 +120,9 @@ namespace task
                 {
                     m_scheduler.m_queue.post
                     ( 
-                        [ pRun, pTask ]()
+                        [ pFIFO, pRun, pTask ]()
                         {
-                            TaskProgress progress;
+                            NotifiedTaskProgress progress( *pFIFO );
                             
                             try
                             {
@@ -149,8 +150,9 @@ namespace task
     
     ///////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////
-    Scheduler::Scheduler( std::optional< unsigned int > maxThreads )
-		:	m_stop( false ),
+    Scheduler::Scheduler( TaskProgressFIFO& fifo, std::optional< unsigned int > maxThreads )
+		:	m_fifo( fifo ),
+            m_stop( false ),
 			m_keepAliveTimer( m_queue, KEEP_ALIVE_RATE )
     {
 		{
