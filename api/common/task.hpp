@@ -17,43 +17,7 @@
 #include <deque>
 
 namespace task
-{
-    /*
-    class TaskInfo
-    {
-        std::string m_strTaskName, m_strSource, m_strTarget;
-        bool m_bCached = false, m_bComplete = false;
-        std::vector< std::string > m_msgs;
-        struct TaskInfoPimpl;
-        std::shared_ptr< TaskInfoPimpl > m_pPimpl;
-        mutable std::mutex m_mutex;
-    public:
-        using Ptr = std::shared_ptr< TaskInfo >;
-        using PtrVector = std::vector< Ptr >;
-        
-        TaskInfo( std::ostream& log );
-        
-        void update();
-        
-        const std::string& taskName() const                     { std::lock_guard< std::mutex > lock( m_mutex ); return m_strTaskName;          }
-        const std::string& source() const                       { std::lock_guard< std::mutex > lock( m_mutex ); return m_strSource;            }
-        const std::string& target() const                       { std::lock_guard< std::mutex > lock( m_mutex ); return m_strTarget;            }
-        const bool cached() const                               { std::lock_guard< std::mutex > lock( m_mutex ); return m_bCached;              }
-        const bool complete() const                             { std::lock_guard< std::mutex > lock( m_mutex ); return m_bComplete;            }
-        const std::vector< std::string >& msgs() const          { std::lock_guard< std::mutex > lock( m_mutex ); return m_msgs;                 }
-        
-        void taskName( const std::string& strTaskName )         { std::lock_guard< std::mutex > lock( m_mutex ); m_strTaskName = strTaskName;   }
-        void source( const std::string& strSource )             { std::lock_guard< std::mutex > lock( m_mutex ); m_strSource = strSource;       }
-        void source( const boost::filesystem::path& file )      { std::lock_guard< std::mutex > lock( m_mutex ); m_strSource = file.string();   }
-        void target( const std::string& strTarget )             { std::lock_guard< std::mutex > lock( m_mutex ); m_strTarget = strTarget;       }
-        void target( const boost::filesystem::path& file )      { std::lock_guard< std::mutex > lock( m_mutex ); m_strTarget = file.string();   }
-        void cached( bool bCached )                             { std::lock_guard< std::mutex > lock( m_mutex ); m_bCached = bCached;           }
-        void complete( bool bComplete )                         { std::lock_guard< std::mutex > lock( m_mutex ); m_bComplete = bComplete;       }
-        void msg( const std::string& strMsg )                   { std::lock_guard< std::mutex > lock( m_mutex ); m_msgs.push_back( strMsg );    }
-    };*/
-    
-    
-    
+{    
     class TaskProgress
     {
     public:
@@ -118,15 +82,6 @@ namespace task
         boost::timer::cpu_timer m_timer;
         TaskProgress m_progress;
     };
-    
-    /*
-    class TimedProgress : public TaskProgress
-    {
-    public:
-        TimedProgress();
-        
-    private:
-    };*/
     
     class Task
     {

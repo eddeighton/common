@@ -7,24 +7,23 @@
 #include <functional>
 #include <iostream>
 
-#define PRINTEXCEPTION_AND_ABORT( code )                                                  \
-	DO_STUFF_AND_REQUIRE_SEMI_COLON(                                                      \
-		try                                                                               \
-		{                                                                                 \
-			code                                                                          \
-		}                                                                                 \
-		catch( std::exception& ex )                                                       \
-		{                                                                                 \
-			std::cout << BOOST_CURRENT_FUNCTION " exception: " << ex.what() << std::endl; \
-			std::abort();                                                                 \
-		}                                                                                 \
-		catch( ... )                                                                      \
-		{                                                                                 \
-			std::cout << BOOST_CURRENT_FUNCTION " Unknown exception" << std::endl;        \
-		}                                                                                 \
-	)
+//#define PRINTEXCEPTION_AND_ABORT( code )                                                  \
+//	DO_STUFF_AND_REQUIRE_SEMI_COLON(                                                      \
+//		try                                                                               \
+//		{                                                                                 \
+//			code                                                                          \
+//		}                                                                                 \
+//		catch( std::exception& ex )                                                       \
+//		{                                                                                 \
+//			std::cout << BOOST_CURRENT_FUNCTION " exception: " << ex.what() << std::endl; \
+//			std::abort();                                                                 \
+//		}                                                                                 \
+//		catch( ... )                                                                      \
+//		{                                                                                 \
+//			std::cout << BOOST_CURRENT_FUNCTION " Unknown exception" << std::endl;        \
+//		}                                                                                 \
+//	)
 
-    
 namespace task
 {
 

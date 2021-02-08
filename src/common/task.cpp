@@ -16,67 +16,13 @@
 
 namespace task
 {
-    /*
-class TaskInfo::TaskInfoPimpl
-{
-    const TaskInfo& m_taskInfo;
-    boost::timer::cpu_timer timer_internal;
-    std::ostream& m_log;
-public:
-    TaskInfoPimpl( const TaskInfo& taskInfo, std::ostream& log )
-        :   m_taskInfo( taskInfo ),
-            m_log( log )
-    {
-    }
-    
-    void TaskInfoPimpl::update()
-    {
-        static std::mutex globalMutex;
-        std::lock_guard< std::mutex > lock( globalMutex );
-        
-        static const int taskPadding = 25;
-        static const int pathPadding = 110;
-        static const int timePadding = 10;
-        
-        for( const std::string& strMsg : m_taskInfo.msgs() )
-        {
-            m_log << m_taskInfo.taskName() << ": " << strMsg << std::endl;
-        }
-        
-        if( m_taskInfo.cached() )
-        {
-            timer_internal.stop();
-            //m_log << 
-            //    std::left << std::setw( taskPadding ) << m_taskInfo.taskName() << " " << 
-            //    std::right << std::setw( pathPadding ) << m_taskInfo.source() << " -> " << 
-            //    std::left << std::setw( pathPadding ) << m_taskInfo.target() << " " << 
-            //    std::left << std::setw( timePadding ) << timer_internal.format( 3, "%w" ) << " CACHED" << std::endl;
-        }
-        else if( m_taskInfo.complete() )
-        {
-            timer_internal.stop();
-            m_log << 
-                std::left << std::setw( taskPadding ) << m_taskInfo.taskName() << " " << 
-                std::right << std::setw( pathPadding ) << m_taskInfo.source() << " -> " << 
-                std::left << std::setw( pathPadding ) << m_taskInfo.target() << " " << 
-                std::left << std::setw( timePadding ) << timer_internal.format( 3, "%w" ) << std::endl;
-        }
-        else 
-        {
-            timer_internal.start();
-        }
-    }
-    
-};
-    */
-    
-//////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
 
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 NotifiedTaskProgress::NotifiedTaskProgress( TaskProgressFIFO& fifo )
     :   m_fifo( fifo )
 {
-    m_timer.start();
+    m_timer.start(); //timer_internal.format( 3, "%w" )
 }
         
 void NotifiedTaskProgress::setTaskInfo( const std::string& strTaskName, 
