@@ -18,6 +18,7 @@
 
 namespace task
 {    
+
     class TaskProgress
     {
     public:
@@ -37,7 +38,6 @@ namespace task
     class TaskProgressFIFO
     {
     public:
-    
         bool empty() const
         {
             std::lock_guard< std::mutex > lock( m_mutex );
@@ -58,7 +58,6 @@ namespace task
             return front;
         }
         
-    
     private:
         mutable std::mutex m_mutex;
         std::deque< TaskProgress > m_fifo;

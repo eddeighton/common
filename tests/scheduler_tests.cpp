@@ -119,9 +119,20 @@ TEST( Scheduler, Basic )
     
     using namespace std::chrono_literals;
     Scheduler scheduler( fifo, 10ms, ( std::optional< unsigned int >() ) );
-    std::future< bool > bFuture = scheduler.run( nullptr, pSchedule );
+    Scheduler::ScheduleRun::Ptr pRun = scheduler.run( nullptr, pSchedule );
     
-    ASSERT_TRUE( bFuture.get() );
+    //std::thread testSharedFuture
+    //(
+    //    [ pRun ]() 
+    //    { 
+    //        if( !pRun->wait() )
+    //            throw std::runtime_error( "failed" );
+    //    } 
+    //);
+    
+    ASSERT_TRUE( pRun->wait() );
+    
+    //testSharedFuture.join();
     
     //{
     //    while( !fifo.empty() )
@@ -146,9 +157,9 @@ TEST( Scheduler, BasicFail )
     
     using namespace std::chrono_literals;
     Scheduler scheduler( fifo, 10ms, ( std::optional< unsigned int >() ) );
-    std::future< bool > bFuture = scheduler.run( nullptr, pSchedule );
+    Scheduler::ScheduleRun::Ptr pRun = scheduler.run( nullptr, pSchedule );
     
-    ASSERT_THROW( bFuture.get(), std::runtime_error );
+    ASSERT_THROW( pRun->wait(), std::runtime_error );
     
     {
         while( !fifo.empty() )
@@ -167,24 +178,28 @@ TEST( Scheduler, MultiSchedule )
     
     std::ostringstream osLog;
     
-    task::Task::PtrVector tasks = createBadSchedule();
+    task::Task::PtrVector tasks1 = createGoodSchedule();
+    task::Task::PtrVector tasks2 = createGoodSchedule();
+    task::Task::PtrVector tasks3 = createGoodSchedule();
     
-    Schedule::Ptr pSchedule( new Schedule( tasks ) );
+    Schedule::Ptr pSchedule1( new Schedule( tasks1 ) );
+    Schedule::Ptr pSchedule2( new Schedule( tasks2 ) );
+    Schedule::Ptr pSchedule3( new Schedule( tasks3 ) );
     
     task::TaskProgressFIFO fifo;
     
     using namespace std::chrono_literals;
     Scheduler scheduler( fifo, 10ms, ( std::optional< unsigned int >() ) );
-    std::future< bool > bFuture = scheduler.run( nullptr, pSchedule );
     
-    ASSERT_THROW( bFuture.get(), std::runtime_error );
+    int schedule1, schedule2, schedule3;
     
-    {
-        while( !fifo.empty() )
-        {
-            const task::TaskProgress progress = fifo.pop();
-            std::cout << progress << std::endl;
-        }
-    }
+    Scheduler::ScheduleRun::Ptr pRun1 = scheduler.run( &schedule1, pSchedule1 );
+    Scheduler::ScheduleRun::Ptr pRun2 = scheduler.run( &schedule2, pSchedule2 );
+    Scheduler::ScheduleRun::Ptr pRun3 = scheduler.run( &schedule3, pSchedule3 );
+
+    ASSERT_TRUE( pRun1->wait() );
+    ASSERT_TRUE( pRun2->wait() );
+    ASSERT_TRUE( pRun3->wait() );
+    
     
 }

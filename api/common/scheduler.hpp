@@ -35,28 +35,35 @@ namespace task
 ///////////////////////////////////////////////////////////////////////////////
     class Scheduler
     {
-        class ScheduleRun
+    public:
+        using ScheduleOwner = void*;
+        
+        class ScheduleRun : public std::enable_shared_from_this< ScheduleRun >
         {
         public:
             using Ptr = std::shared_ptr< ScheduleRun >;
             
-            ScheduleRun( Scheduler& scheduler, Schedule::Ptr pSchedule );
+            ScheduleRun( Scheduler& scheduler, ScheduleOwner pOwner, Schedule::Ptr pSchedule );
             
-            void taskCompleted( Task::RawPtr pTask );
-            void taskFailed( Task::RawPtr pTask );
+            ScheduleOwner getOwner() const { return m_pOwner; }
+            
+            bool wait();
+            void cancel();
+            
+        //private:
+            void runTask( Task::RawPtr pTask );
             void progress();
             
-            std::future< bool > getFuture() { return m_promise.get_future(); }
         private:
             Scheduler& m_scheduler;
+            ScheduleOwner m_pOwner;
             Schedule::Ptr m_pSchedule;
             Task::RawPtrSet m_pending, m_active, m_finished;
             std::mutex m_mutex;
             std::promise< bool > m_promise;
+            std::future< bool > m_future;
+            bool m_bCancelled;
         };
-        
-    public:
-        using ScheduleOwner = void*;
         
     private:
         using ScheduleRunMap = std::map< ScheduleOwner, ScheduleRun::Ptr >;
@@ -70,20 +77,23 @@ namespace task
             std::optional< unsigned int > maxThreads );
         ~Scheduler();
         
-        std::future< bool > run( ScheduleOwner pOwner, Schedule::Ptr pSchedule );
+        ScheduleRun::Ptr run( ScheduleOwner pOwner, Schedule::Ptr pSchedule );
         void stop();
         
     //private: use of functional prevents visibility control
         void OnKeepAlive( const boost::system::error_code& ec );
+        void OnRunComplete( ScheduleRun::Ptr pRun );
         
     private:
         TaskProgressFIFO& m_fifo;
-        std::atomic< bool > m_stop;
+        bool m_bStop;
+        std::mutex m_mutex;
         boost::asio::io_context m_queue;
         std::chrono::milliseconds m_keepAliveRate;
         boost::asio::steady_timer m_keepAliveTimer;
         std::vector< std::thread > m_threads;
         ScheduleRunMap m_runs;
+        ScheduleRunMap m_pending;
     };
 
 }
