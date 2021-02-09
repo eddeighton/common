@@ -129,10 +129,10 @@ TEST( Scheduler, Basic )
     //            throw std::runtime_error( "failed" );
     //    } 
     //);
+    //testSharedFuture.join();
     
     ASSERT_TRUE( pRun->wait() );
     
-    //testSharedFuture.join();
     
     //{
     //    while( !fifo.empty() )
@@ -200,6 +200,35 @@ TEST( Scheduler, MultiSchedule )
     ASSERT_TRUE( pRun1->wait() );
     ASSERT_TRUE( pRun2->wait() );
     ASSERT_TRUE( pRun3->wait() );
+    
+    
+}
+
+TEST( Scheduler, ReSchedule )
+{
+    using namespace task;
+    
+    std::ostringstream osLog;
+    
+    task::Task::PtrVector tasks1 = createGoodSchedule();
+    Schedule::Ptr pSchedule1( new Schedule( tasks1 ) );
+    
+    task::TaskProgressFIFO fifo;
+    
+    using namespace std::chrono_literals;
+    Scheduler scheduler( fifo, 10ms, ( std::optional< unsigned int >() ) );
+    
+    int schedule1;
+    
+    Scheduler::ScheduleRun::Ptr pRun1 = scheduler.run( &schedule1, pSchedule1 );
+    Scheduler::ScheduleRun::Ptr pRun2 = scheduler.run( &schedule1, pSchedule1 );
+    Scheduler::ScheduleRun::Ptr pRun3 = scheduler.run( &schedule1, pSchedule1 );
+    Scheduler::ScheduleRun::Ptr pRun4 = scheduler.run( &schedule1, pSchedule1 );
+
+    ASSERT_TRUE( !pRun1->wait() );
+    ASSERT_TRUE( !pRun2->wait() );
+    ASSERT_TRUE( !pRun3->wait() );
+    ASSERT_TRUE( pRun4->wait() );
     
     
 }

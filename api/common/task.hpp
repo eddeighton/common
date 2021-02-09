@@ -93,7 +93,6 @@ namespace task
         using RawPtrSet = std::set< RawPtr >;
         
         Task( const RawPtrSet& dependencies );
-        
         virtual ~Task();
         
         virtual bool isReady( const RawPtrSet& finished );

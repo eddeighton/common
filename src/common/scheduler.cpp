@@ -7,23 +7,6 @@
 #include <functional>
 #include <iostream>
 
-//#define PRINTEXCEPTION_AND_ABORT( code )                                                  \
-//	DO_STUFF_AND_REQUIRE_SEMI_COLON(                                                      \
-//		try                                                                               \
-//		{                                                                                 \
-//			code                                                                          \
-//		}                                                                                 \
-//		catch( std::exception& ex )                                                       \
-//		{                                                                                 \
-//			std::cout << BOOST_CURRENT_FUNCTION " exception: " << ex.what() << std::endl; \
-//			std::abort();                                                                 \
-//		}                                                                                 \
-//		catch( ... )                                                                      \
-//		{                                                                                 \
-//			std::cout << BOOST_CURRENT_FUNCTION " Unknown exception" << std::endl;        \
-//		}                                                                                 \
-//	)
-
 namespace task
 {
 
@@ -31,10 +14,6 @@ namespace task
     ///////////////////////////////////////////////////////////////////////////////
     Schedule::Schedule( const Task::PtrVector& tasks )
         :   m_tasks( tasks )
-    {
-    }
-    
-    Schedule::~Schedule()
     {
     }
 
@@ -79,6 +58,14 @@ namespace task
             m_promise.set_value( false );
         }
     }
+    
+    void Scheduler::ScheduleRun::cancelWithoutStart()
+    {
+        std::lock_guard< std::mutex > lock( m_mutex );
+        m_pending.clear();
+        m_bCancelled = true;
+        m_promise.set_value( false );
+    }
 
     void Scheduler::ScheduleRun::runTask( Task::RawPtr pTask )
     {
@@ -89,8 +76,11 @@ namespace task
             pTask->run( progress );
             
             bool bRemaining = true;
+            bool bCancelled = false;
             {
                 std::lock_guard< std::mutex > lock( m_mutex );
+                
+                bCancelled = m_bCancelled;
                 Task::RawPtrSet::iterator iFind = m_active.find( pTask );
                 VERIFY_RTE_MSG( iFind != m_active.end(), "Failed to find task in active set" );
                 m_active.erase( iFind );
@@ -110,14 +100,14 @@ namespace task
             else
             {
                 m_scheduler.OnRunComplete( shared_from_this() );
-                m_promise.set_value( !m_bCancelled );
+                m_promise.set_value( !bCancelled );
             }
         }
         catch( std::exception& ex )
         {
-            std::lock_guard< std::mutex > lock( m_mutex );
-            
             progress.complete( false );
+            
+            std::lock_guard< std::mutex > lock( m_mutex );
             
             Task::RawPtrSet::iterator iFind = m_active.find( pTask );
             VERIFY_RTE_MSG( iFind != m_active.end(), "Failed to find task in active set" );
@@ -229,10 +219,24 @@ namespace task
     {
         std::lock_guard< std::mutex > lock( m_mutex );
         
-        ScheduleRunMap::iterator iFind = m_runs.find( pRun->getOwner() );
+        ScheduleOwner pRunOwnder = pRun->getOwner();
+        
+        ScheduleRunMap::iterator iFind = m_runs.find( pRunOwnder );
         if( iFind != m_runs.end() )
         {
+            VERIFY_RTE( iFind->second == pRun );
             m_runs.erase( iFind );
+            
+            
+            
+            ScheduleRunMap::iterator iFindPending = m_pending.find( pRunOwnder );
+            if( iFindPending != m_pending.end() )
+            {
+                ScheduleRun::Ptr pPendingRun = iFindPending->second;
+                m_pending.erase( iFindPending );
+                m_runs.insert( std::make_pair( pRunOwnder, pPendingRun ) );
+                m_queue.post( std::bind( &Scheduler::ScheduleRun::progress, pPendingRun ) );
+            }
         }
         else
         {
@@ -248,14 +252,25 @@ namespace task
         if( iFind != m_runs.end() )
         {
             ScheduleRun::Ptr pExistingRun = iFind->second;
+            ScheduleRun::Ptr pNewScheduleRun( new ScheduleRun( *this, pOwner, pSchedule ) );
             
-            pExistingRun->cancel();
+            //overwrite any existing pending schedule run
+            ScheduleRunMap::iterator iFindPending = m_pending.find( pOwner );
+            if( iFindPending != m_pending.end() )
+            {
+                ScheduleRun::Ptr pPendingRun = iFindPending->second;
+                m_pending.erase( iFindPending );
+                pPendingRun->cancelWithoutStart();
+            }
             
-            return pExistingRun;
+            m_pending[ pOwner ] = pNewScheduleRun;
+            
+            pExistingRun->cancel(); //will call OnRunComplete one active tasks finished
+            
+            return pNewScheduleRun;
         }
         else
         {
-        
             ScheduleRun::Ptr pScheduleRun( new ScheduleRun( *this, pOwner, pSchedule ) );
             
             m_runs.insert( std::make_pair( pOwner, pScheduleRun ) );

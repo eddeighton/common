@@ -23,7 +23,6 @@ namespace task
         using Ptr = std::shared_ptr< Schedule >;
 
         Schedule( const Task::PtrVector& tasks );
-        ~Schedule();
         
         const Task::PtrVector& getTasks() const { return m_tasks; }
         
@@ -51,6 +50,7 @@ namespace task
             void cancel();
             
         //private:
+            void cancelWithoutStart();
             void runTask( Task::RawPtr pTask );
             void progress();
             
@@ -68,9 +68,12 @@ namespace task
     private:
         using ScheduleRunMap = std::map< ScheduleOwner, ScheduleRun::Ptr >;
     public:
-
-        //using namespace std::chrono_literals;
-        //static const auto DEFAULT_ALIVE_RATE = 250ms;
+        static auto getDefaultAliveRate()
+        {
+            using namespace std::chrono_literals;
+            static const auto DEFAULT_ALIVE_RATE = 250ms;
+            return DEFAULT_ALIVE_RATE;
+        }
         
         Scheduler( TaskProgressFIFO& fifo, 
             std::chrono::milliseconds keepAliveRate, 
@@ -80,7 +83,7 @@ namespace task
         ScheduleRun::Ptr run( ScheduleOwner pOwner, Schedule::Ptr pSchedule );
         void stop();
         
-    //private: use of functional prevents visibility control
+    //private:
         void OnKeepAlive( const boost::system::error_code& ec );
         void OnRunComplete( ScheduleRun::Ptr pRun );
         
