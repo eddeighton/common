@@ -10,32 +10,6 @@
 
 namespace
 {
-    
-    std::ostream& operator <<( std::ostream& os, const task::Status& status )
-    {
-        switch( status.m_state )
-        {
-            case task::Status::ePending   :
-                THROW_RTE( "Pending task status reported" );
-            case task::Status::eStarted   :
-                os << status.m_strTaskName << " started";
-                break;
-            case task::Status::eCached    :
-                os << status.m_strTaskName << " cached";
-                break;
-            case task::Status::eSucceeded :
-                os << status.m_strTaskName << " success: " << status.m_elapsed.value();
-                break;
-            case task::Status::eFailed    :
-                os << status.m_strTaskName << " failure: " << status.m_elapsed.value();
-                break;
-            default:
-                THROW_RTE( "Unknown task status type" );
-        }
-        
-        return os;
-    }
-    
     class TestTask : public task::Task
     {
         std::string m_strName;
@@ -53,6 +27,8 @@ namespace
             
             using namespace std::chrono_literals;
             std::this_thread::sleep_for( 1ms );
+            
+            progress.msg( "hello" );
             
             progress.setState( task::Status::eSucceeded );
         }
@@ -111,6 +87,24 @@ namespace
     }
 }
 
+TEST( Scheduler, Empty )
+{
+    using namespace task;
+    
+    std::ostringstream osLog;
+    
+    task::Task::PtrVector tasks;
+    
+    Schedule::Ptr pSchedule( new Schedule( tasks ) );
+    
+    task::StatusFIFO fifo;
+    
+    using namespace std::chrono_literals;
+    Scheduler scheduler( fifo, 10ms, ( std::optional< unsigned int >() ) );
+    Scheduler::Run::Ptr pRun = scheduler.run( nullptr, pSchedule );
+    
+    ASSERT_TRUE( pRun->wait() );
+}
 
 TEST( Scheduler, Basic )
 {
@@ -148,6 +142,19 @@ TEST( Scheduler, Basic )
     //        std::cout << progress << std::endl;
     //    }
     //}
+}
+
+TEST( Scheduler, BasicRun )
+{
+    using namespace task;
+    
+    std::ostringstream osLog;
+    
+    task::Task::PtrVector tasks = createGoodSchedule();
+    
+    Schedule::Ptr pSchedule( new Schedule( tasks ) );
+    
+    run( pSchedule, osLog );
 }
 
 TEST( Scheduler, BasicFail1 )

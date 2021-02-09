@@ -53,6 +53,7 @@ namespace task
             void finished();
             void cancelWithoutStart();
             void runTask( Task::RawPtr pTask );
+            void start();
             void next();
             
         private:
@@ -100,6 +101,8 @@ namespace task
         ScheduleRunMap m_runs;
         ScheduleRunMap m_pending;
     };
+    
+    void run( task::Schedule::Ptr pSchedule, std::ostream& os );
 
 }
 

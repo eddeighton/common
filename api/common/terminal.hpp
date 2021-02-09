@@ -59,8 +59,11 @@
 namespace common
 {
 
-    static const char* RED_BEGIN = "\033[31m";
-    static const char* RED_END   = "\033[0m";
+    static const char* COLOUR_RED_BEGIN         = "\033[31m";
+    static const char* COLOUR_YELLOW_BEGIN      = "\033[32m";
+    static const char* COLOUR_GREEN_BEGIN       = "\033[33m";
+    static const char* COLOUR_WHITE_BEGIN       = "\033[37m";
+    static const char* COLOUR_END               = "\033[0m";
 
 }
 

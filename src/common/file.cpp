@@ -193,7 +193,7 @@ std::unique_ptr< boost::filesystem::ifstream > createBinaryInputFileStream( cons
     return pFileStream;
 }
 
-void updateFileIfChanged( const boost::filesystem::path& filePath, const std::string& strContents )
+bool updateFileIfChanged( const boost::filesystem::path& filePath, const std::string& strContents )
 {
     bool bUpdateFile = true;
     if( boost::filesystem::exists( filePath ) )
@@ -217,7 +217,9 @@ void updateFileIfChanged( const boost::filesystem::path& filePath, const std::st
         std::unique_ptr< boost::filesystem::ofstream > pFileStream =
                 boost::filesystem::createNewFileStream( filePath );
         *pFileStream << strContents;
-    }          
+    }  
+
+    return bUpdateFile;
 }
 
 bool compareFiles( const boost::filesystem::path& fileOne, const boost::filesystem::path& fileTwo )

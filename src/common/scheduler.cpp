@@ -1,6 +1,7 @@
 
 #include "common/scheduler.hpp"
 #include "common/assert_verify.hpp"
+#include "common/terminal.hpp"
 
 #include "boost/current_function.hpp"
 
@@ -37,8 +38,6 @@ namespace task
         if( m_future.valid() )
         {
             return m_future.get();
-            //std::shared_future< bool > sharedFuture = m_future.share();
-            //return sharedFuture.get();
         }
         else
         {
@@ -86,7 +85,7 @@ namespace task
         {
             pTask->run( progress );
             
-            VERIFY_RTE( progress.isFinished() );
+            VERIFY_RTE_MSG( progress.isFinished(), "Task: " << progress.getStatus().m_strTaskName );
             
             bool bRemaining = true;
             bool bCancelled = false;
@@ -136,6 +135,24 @@ namespace task
         }
     }
     
+    void Scheduler::Run::start()
+    {
+        bool bPending = false;
+        {
+            std::lock_guard< std::mutex > lock( m_mutex );
+            bPending = !m_pending.empty();
+        }
+        
+        if( bPending )
+        {
+            next();
+        }
+        else
+        {
+            m_scheduler.OnRunComplete( shared_from_this() );
+        }
+    }
+    
     void Scheduler::Run::next()
     {
         Task::RawPtrSet ready;
@@ -169,6 +186,7 @@ namespace task
                     std::bind( &Scheduler::Run::runTask, this, pTask ) );
             }
         }
+    
     }
     
     ///////////////////////////////////////////////////////////////////////////////
@@ -244,8 +262,9 @@ namespace task
             {
                 Run::Ptr pPendingRun = iFindPending->second;
                 m_pending.erase( iFindPending );
+                
                 m_runs.insert( std::make_pair( pRunOwnder, pPendingRun ) );
-                m_queue.post( std::bind( &Scheduler::Run::next, pPendingRun ) );
+                m_queue.post( std::bind( &Scheduler::Run::start, pPendingRun ) );
             }
         }
         else
@@ -285,7 +304,7 @@ namespace task
             
             m_runs.insert( std::make_pair( pOwner, pScheduleRun ) );
             
-            m_queue.post( std::bind( &Scheduler::Run::next, pScheduleRun ) );
+            m_queue.post( std::bind( &Scheduler::Run::start, pScheduleRun ) );
             
             return pScheduleRun;
         }
@@ -297,4 +316,68 @@ namespace task
         m_bStop = true;
     }
     
+    
+    void run( task::Schedule::Ptr pSchedule, std::ostream& os )
+    {
+        task::StatusFIFO fifo;
+        std::atomic< bool > bContinue = true;
+        
+        std::thread logger
+        (
+            [ & ]()
+            {
+                while( bContinue )
+                {
+                    while( !fifo.empty() )
+                    {
+                        const Status status = fifo.pop();
+                        switch( status.m_state )
+                        {
+                            case task::Status::ePending   :
+                                THROW_RTE( "Pending task status reported" );
+                            case task::Status::eStarted   :
+                                //os << status.m_strTaskName << " started" << std::endl;
+                                break;
+                            case task::Status::eCached    :
+                                //os << status.m_strTaskName << " cached" << std::endl;
+                                break;
+                            case task::Status::eSucceeded :
+                                os << status << std::endl;
+                                break;
+                            case task::Status::eFailed    :
+                                os << status << std::endl;
+                                break;
+                            default:
+                                THROW_RTE( "Unknown task status type" );
+                        }
+                    }
+                    using namespace std::chrono_literals;
+                    std::this_thread::sleep_for( 1ms );
+                }
+            }
+        );
+    
+        {
+            Scheduler scheduler( fifo, 
+                Scheduler::getDefaultAliveRate(), 
+                std::optional< unsigned int >() );
+            
+            int owner;
+            
+            try
+            {
+                Scheduler::Run::Ptr pRun =
+                    scheduler.run( &owner, pSchedule );
+                    
+                pRun->wait();
+            }
+            catch( std::exception& ex )
+            {
+                os << common::COLOUR_RED_BEGIN << "Error: " << ex.what() << common::COLOUR_END << std::endl;
+            }
+        }
+        
+        bContinue = false;
+        logger.join();
+    }
 }

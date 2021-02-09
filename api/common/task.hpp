@@ -15,6 +15,7 @@
 #include <ostream>
 #include <optional>
 #include <deque>
+#include <variant>
 
 namespace task
 {    
@@ -37,15 +38,17 @@ namespace task
         
         State m_state;
         
+        using Subject = std::variant< std::string, boost::filesystem::path >;
+        
         std::string m_strTaskName;
-        std::optional< std::string > m_optSourceString;
-        std::optional< boost::filesystem::path > m_optSourcePath;
-        std::optional< std::string > m_optTargetString;
-        std::optional< boost::filesystem::path > m_optTargetPath;
+        std::optional< Subject > m_source, m_target;
         
         std::vector< std::string > m_msgs;
         std::optional< std::string > m_elapsed;
     };
+    
+    std::ostream& operator<<( std::ostream& os, const Status::Subject& subject );
+    std::ostream& operator<<( std::ostream& os, const Status& status );
     
     class StatusFIFO
     {
@@ -80,11 +83,14 @@ namespace task
     public:
         Progress( StatusFIFO& fifo );
         
+        const Status& getStatus() const { return m_status; }
         bool isFinished() const;
         
-        void start( const std::string& strTaskName, const std::string& strSource, const std::string& strTarget );
-        void start( const std::string& strTaskName, const boost::filesystem::path& fileSource, const std::string& fileTarget );
+        void start( const std::string& strTaskName, Status::Subject source, Status::Subject target );
         
+        void cached();
+        void succeeded();
+        void failed();
         void setState( Status::State state );
         
         void msg( const std::string& strMsg );
