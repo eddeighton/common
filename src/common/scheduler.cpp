@@ -221,8 +221,19 @@ namespace task
 		boost::asio::io_context* pQueue = &m_queue;
         for( int i = 0; i < nMaxThreads; ++i )
         {
-            m_threads.push_back( 
-                std::thread( [ pQueue ](){ pQueue->run();} ) );
+            m_threads.emplace_back
+            ( 
+                std::move
+                ( 
+                    std::thread
+                    ( 
+                        [ pQueue ]()
+                        { 
+                            pQueue->run();
+                        } 
+                    ) 
+                ) 
+            );
         }
     }
     

@@ -85,6 +85,13 @@ namespace
         Task::PtrVector tasks{ pTask1, pTask2, pTask3, pTask4, pTask5 };
         return tasks;
     }
+    
+    static auto getKeepAliveTime()
+    {
+        using namespace std::chrono_literals;
+        return 2ms;
+    }
+    
 }
 
 TEST( Scheduler, Empty )
@@ -100,7 +107,7 @@ TEST( Scheduler, Empty )
     task::StatusFIFO fifo;
     
     using namespace std::chrono_literals;
-    Scheduler scheduler( fifo, 10ms, ( std::optional< unsigned int >() ) );
+    Scheduler scheduler( fifo, getKeepAliveTime(), ( std::optional< unsigned int >() ) );
     Scheduler::Run::Ptr pRun = scheduler.run( nullptr, pSchedule );
     
     ASSERT_TRUE( pRun->wait() );
@@ -119,7 +126,7 @@ TEST( Scheduler, Basic )
     task::StatusFIFO fifo;
     
     using namespace std::chrono_literals;
-    Scheduler scheduler( fifo, 10ms, ( std::optional< unsigned int >() ) );
+    Scheduler scheduler( fifo, getKeepAliveTime(), ( std::optional< unsigned int >() ) );
     Scheduler::Run::Ptr pRun = scheduler.run( nullptr, pSchedule );
     
     //std::thread testSharedFuture
@@ -170,7 +177,7 @@ TEST( Scheduler, BasicFail1 )
     StatusFIFO fifo;
     
     using namespace std::chrono_literals;
-    Scheduler scheduler( fifo, 10ms, ( std::optional< unsigned int >() ) );
+    Scheduler scheduler( fifo, getKeepAliveTime(), ( std::optional< unsigned int >() ) );
     Scheduler::Run::Ptr pRun = scheduler.run( nullptr, pSchedule );
     
     ASSERT_THROW( pRun->wait(), std::runtime_error );
@@ -203,7 +210,7 @@ TEST( Scheduler, BasicFail2 )
     StatusFIFO fifo;
     
     using namespace std::chrono_literals;
-    Scheduler scheduler( fifo, 10ms, ( std::optional< unsigned int >() ) );
+    Scheduler scheduler( fifo, getKeepAliveTime(), ( std::optional< unsigned int >() ) );
     Scheduler::Run::Ptr pRun = scheduler.run( nullptr, pSchedule );
     
     ASSERT_THROW( pRun->wait(), std::runtime_error );
@@ -233,7 +240,7 @@ TEST( Scheduler, MultiSchedule )
     StatusFIFO fifo;
     
     using namespace std::chrono_literals;
-    Scheduler scheduler( fifo, 10ms, ( std::optional< unsigned int >() ) );
+    Scheduler scheduler( fifo, getKeepAliveTime(), ( std::optional< unsigned int >() ) );
     
     int schedule1, schedule2, schedule3;
     
@@ -260,7 +267,7 @@ TEST( Scheduler, ReSchedule )
     StatusFIFO fifo;
     
     using namespace std::chrono_literals;
-    Scheduler scheduler( fifo, 10ms, ( std::optional< unsigned int >() ) );
+    Scheduler scheduler( fifo, getKeepAliveTime(), ( std::optional< unsigned int >() ) );
     
     const int schedule1 = 0;
     
