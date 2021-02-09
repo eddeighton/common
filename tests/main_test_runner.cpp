@@ -6,14 +6,24 @@
 #include <gtest/gtest.h>
 
 #include <boost/program_options.hpp>
+#include <boost/stacktrace.hpp>
 
 #include <iostream>
 #include <memory>
 
 #include "common/backtrace.hpp"
 
+void on_terminate()
+{
+    std::cout << "terminate called..." << std::endl;
+    std::cout << boost::stacktrace::stacktrace();
+    std::abort();
+}
+
 int main(int argc, char* argv[])
 {
+    std::set_terminate( on_terminate );
+    
     Common::disableDebugErrorPrompts();
     
     std::string strFilter, strXSL;
@@ -63,6 +73,10 @@ int main(int argc, char* argv[])
     catch( std::runtime_error& e )
     {
         std::cout << "Encountered exception: " << e.what() << std::endl;
+    }
+    catch( ... )
+    {
+        std::cout << "Encountered unknown exception" << std::endl;
     }
     
     //wait for UnitTestWrapper to restore standard output before we print

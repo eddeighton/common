@@ -39,12 +39,13 @@ namespace task
         class Run : public std::enable_shared_from_this< Run >
         {
         public:
-            using Owner = void*;
+            using Owner = const void*;
             using Ptr = std::shared_ptr< Run >;
             
             Run( Scheduler& scheduler, Owner pOwner, Schedule::Ptr pSchedule );
             
             Owner getOwner() const { return m_pOwner; }
+            bool isCancelled() const;
             
             bool wait();
             void cancel();
@@ -61,7 +62,7 @@ namespace task
             Owner m_pOwner;
             Schedule::Ptr m_pSchedule;
             Task::RawPtrSet m_pending, m_active, m_finished;
-            std::mutex m_mutex;
+            mutable std::recursive_mutex m_mutex;
             std::promise< bool > m_promise;
             std::future< bool > m_future;
             bool m_bCancelled;
@@ -93,7 +94,7 @@ namespace task
     private:
         StatusFIFO& m_fifo;
         bool m_bStop;
-        std::mutex m_mutex;
+        std::recursive_mutex m_mutex;
         boost::asio::io_context m_queue;
         std::chrono::milliseconds m_keepAliveRate;
         boost::asio::steady_timer m_keepAliveTimer;

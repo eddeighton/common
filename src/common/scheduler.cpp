@@ -33,6 +33,12 @@ namespace task
         }
     }
     
+    bool Scheduler::Run::isCancelled() const
+    {
+        std::lock_guard< std::recursive_mutex > lock( m_mutex );
+        return m_bCancelled;
+    }
+    
     bool Scheduler::Run::wait()
     {
         if( m_future.valid() )
@@ -47,18 +53,22 @@ namespace task
     
     void Scheduler::Run::cancel()
     {
-        std::lock_guard< std::mutex > lock( m_mutex );
-        m_pending.clear();
-        m_bCancelled = true;
-        
-        if( m_pending.empty() && m_active.empty() )
+        std::lock_guard< std::recursive_mutex > lock( m_mutex );
+        if( !m_bCancelled )
         {
-            m_scheduler.OnRunComplete( shared_from_this() );
+            m_pending.clear();
+            m_bCancelled = true;
+            
+            if( m_pending.empty() && m_active.empty() )
+            {
+                m_scheduler.OnRunComplete( shared_from_this() );
+            }
         }
     }
     
     void Scheduler::Run::finished()
     {
+        std::lock_guard< std::recursive_mutex > lock( m_mutex );
         if( m_pExceptionPtr.has_value() )
         {
             m_promise.set_exception( m_pExceptionPtr.value() );
@@ -71,7 +81,7 @@ namespace task
     
     void Scheduler::Run::cancelWithoutStart()
     {
-        std::lock_guard< std::mutex > lock( m_mutex );
+        std::lock_guard< std::recursive_mutex > lock( m_mutex );
         m_pending.clear();
         m_bCancelled = true;
         finished();
@@ -88,11 +98,9 @@ namespace task
             VERIFY_RTE_MSG( progress.isFinished(), "Task: " << progress.getStatus().m_strTaskName );
             
             bool bRemaining = true;
-            bool bCancelled = false;
             {
-                std::lock_guard< std::mutex > lock( m_mutex );
+                std::lock_guard< std::recursive_mutex > lock( m_mutex );
                 
-                bCancelled = m_bCancelled;
                 Task::RawPtrSet::iterator iFind = m_active.find( pTask );
                 VERIFY_RTE_MSG( iFind != m_active.end(), "Failed to find task in active set" );
                 m_active.erase( iFind );
@@ -118,7 +126,7 @@ namespace task
         {
             progress.setState( Status::eFailed );
             
-            std::lock_guard< std::mutex > lock( m_mutex );
+            std::lock_guard< std::recursive_mutex > lock( m_mutex );
             
             Task::RawPtrSet::iterator iFind = m_active.find( pTask );
             VERIFY_RTE_MSG( iFind != m_active.end(), "Failed to find task in active set" );
@@ -137,19 +145,18 @@ namespace task
     
     void Scheduler::Run::start()
     {
-        bool bPending = false;
+        std::lock_guard< std::recursive_mutex > lock( m_mutex );
+        if( !m_bCancelled )
         {
-            std::lock_guard< std::mutex > lock( m_mutex );
-            bPending = !m_pending.empty();
-        }
-        
-        if( bPending )
-        {
-            next();
-        }
-        else
-        {
-            m_scheduler.OnRunComplete( shared_from_this() );
+            if( !m_pending.empty() )
+            {
+                next();
+            }
+            else
+            {
+                m_bCancelled = true;
+                m_scheduler.OnRunComplete( shared_from_this() );
+            }
         }
     }
     
@@ -157,7 +164,7 @@ namespace task
     {
         Task::RawPtrSet ready;
         {
-            std::lock_guard< std::mutex > lock( m_mutex );
+            std::lock_guard< std::recursive_mutex > lock( m_mutex );
             {
                 for( Task::RawPtrSet::iterator 
                     i = m_pending.begin(),
@@ -232,7 +239,7 @@ namespace task
 	{
         bool bStopped = false;
         {
-            std::lock_guard< std::mutex > lock( m_mutex );
+            std::lock_guard< std::recursive_mutex > lock( m_mutex );
             bStopped = m_bStop;
         }
         
@@ -246,73 +253,71 @@ namespace task
     
     void Scheduler::OnRunComplete( Run::Ptr pRun )
     {
-        std::lock_guard< std::mutex > lock( m_mutex );
+        std::lock_guard< std::recursive_mutex > lock( m_mutex );
         
-        Run::Owner pRunOwnder = pRun->getOwner();
+        Run::Owner pRunOwner = pRun->getOwner();
         
-        ScheduleRunMap::iterator iFind = m_runs.find( pRunOwnder );
-        if( iFind != m_runs.end() )
-        {
-            VERIFY_RTE( iFind->second == pRun );
-            m_runs.erase( iFind );
-            pRun->finished();
+        ScheduleRunMap::iterator iFind = m_runs.find( pRunOwner );
+        VERIFY_RTE_MSG( iFind != m_runs.end(), "Error in scheduler" );
+        VERIFY_RTE_MSG( iFind->second == pRun, "Error in scheduler" );
+
+        m_runs.erase( iFind );
+        pRun->finished();
             
-            ScheduleRunMap::iterator iFindPending = m_pending.find( pRunOwnder );
-            if( iFindPending != m_pending.end() )
-            {
-                Run::Ptr pPendingRun = iFindPending->second;
-                m_pending.erase( iFindPending );
-                
-                m_runs.insert( std::make_pair( pRunOwnder, pPendingRun ) );
-                m_queue.post( std::bind( &Scheduler::Run::start, pPendingRun ) );
-            }
-        }
-        else
+        ScheduleRunMap::iterator iFindPending = m_pending.find( pRunOwner );
+        if( iFindPending != m_pending.end() )
         {
-            THROW_RTE( "Error in schedule management" );
+            Run::Ptr pPendingRun = iFindPending->second;
+            m_pending.erase( iFindPending );
+                
+            auto ibResult =
+                m_runs.insert( std::make_pair( pRunOwner, pPendingRun ) );
+            VERIFY_RTE( ibResult.second );
+            m_queue.post( std::bind( &Scheduler::Run::start, pPendingRun ) );
         }
     }
     
     Scheduler::Run::Ptr Scheduler::run( Run::Owner pOwner, Schedule::Ptr pSchedule )
     {
-        std::lock_guard< std::mutex > lock( m_mutex );
+        Run::Ptr pScheduleRun( new Run( *this, pOwner, pSchedule ) );
         
-        ScheduleRunMap::iterator iFind = m_runs.find( pOwner );
-        if( iFind != m_runs.end() )
         {
-            Run::Ptr pExistingRun = iFind->second;
-            Run::Ptr pNewScheduleRun( new Run( *this, pOwner, pSchedule ) );
+            std::lock_guard< std::recursive_mutex > lock( m_mutex );
             
-            //overwrite any existing pending schedule run
-            ScheduleRunMap::iterator iFindPending = m_pending.find( pOwner );
-            if( iFindPending != m_pending.end() )
+            ScheduleRunMap::iterator iFind = m_runs.find( pOwner );
+            if( iFind != m_runs.end() )
             {
-                Run::Ptr pPendingRun = iFindPending->second;
-                m_pending.erase( iFindPending );
-                pPendingRun->cancelWithoutStart();
+                //overwrite any existing pending schedule run
+                ScheduleRunMap::iterator iFindPending = m_pending.find( pOwner );
+                if( iFindPending != m_pending.end() )
+                {
+                    Run::Ptr pPendingRun = iFindPending->second;
+                    m_pending.erase( iFindPending );
+                    pPendingRun->cancelWithoutStart();
+                }
+                
+                m_pending.insert( std::make_pair( pOwner, pScheduleRun ) );
+                
+                if( !iFind->second->isCancelled() )
+                {
+                    iFind->second->cancel();
+                }
             }
-            
-            m_pending[ pOwner ] = pNewScheduleRun;
-            
-            pExistingRun->cancel(); //will call OnRunComplete one active tasks finished
-            
-            return pNewScheduleRun;
+            else
+            {
+                auto ibResult =
+                    m_runs.insert( std::make_pair( pOwner, pScheduleRun ) );
+                VERIFY_RTE( ibResult.second );
+                m_queue.post( std::bind( &Scheduler::Run::start, pScheduleRun ) );
+            }
         }
-        else
-        {
-            Run::Ptr pScheduleRun( new Run( *this, pOwner, pSchedule ) );
-            
-            m_runs.insert( std::make_pair( pOwner, pScheduleRun ) );
-            
-            m_queue.post( std::bind( &Scheduler::Run::start, pScheduleRun ) );
-            
-            return pScheduleRun;
-        }
+        
+        return pScheduleRun;
     }
     
     void Scheduler::stop()
     {
-        std::lock_guard< std::mutex > lock( m_mutex );
+        std::lock_guard< std::recursive_mutex > lock( m_mutex );
         m_bStop = true;
     }
     

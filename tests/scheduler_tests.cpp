@@ -262,17 +262,23 @@ TEST( Scheduler, ReSchedule )
     using namespace std::chrono_literals;
     Scheduler scheduler( fifo, 10ms, ( std::optional< unsigned int >() ) );
     
-    int schedule1;
+    const int schedule1 = 0;
     
-    Scheduler::Run::Ptr pRun1 = scheduler.run( &schedule1, pSchedule1 );
-    Scheduler::Run::Ptr pRun2 = scheduler.run( &schedule1, pSchedule1 );
-    Scheduler::Run::Ptr pRun3 = scheduler.run( &schedule1, pSchedule1 );
-    Scheduler::Run::Ptr pRun4 = scheduler.run( &schedule1, pSchedule1 );
+    std::vector< Scheduler::Run::Ptr > runs;
+    for( int i = 0; i < 100; ++i )
+    {
+        Scheduler::Run::Ptr pRun = scheduler.run( &schedule1, pSchedule1 );
+        runs.push_back( pRun );
+    }
+    
+    Scheduler::Run::Ptr pFinalRun = scheduler.run( &schedule1, pSchedule1 );
+    
+    for( Scheduler::Run::Ptr pRun : runs )
+    {
+        ASSERT_TRUE( !pRun->wait() );
+    }
 
-    ASSERT_TRUE( !pRun1->wait() );
-    ASSERT_TRUE( !pRun2->wait() );
-    ASSERT_TRUE( !pRun3->wait() );
-    ASSERT_TRUE( pRun4->wait() );
+    ASSERT_TRUE( pFinalRun->wait() );
     
     
 }
