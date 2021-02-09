@@ -19,23 +19,35 @@
 namespace task
 {    
 
-    class TaskProgress
+    class Status
     {
     public:
+        enum State
+        {
+            ePending,
+            eStarted,
+            eCached,
+            eSucceeded,
+            eFailed
+        };
+        
+        Status()
+            :   m_state( ePending )
+        {}
+        
+        State m_state;
+        
         std::string m_strTaskName;
         std::optional< std::string > m_optSourceString;
         std::optional< boost::filesystem::path > m_optSourcePath;
         std::optional< std::string > m_optTargetString;
         std::optional< boost::filesystem::path > m_optTargetPath;
         
-        std::optional< bool > m_bCached;
-        std::optional< bool > m_bComplete;
         std::vector< std::string > m_msgs;
-        
         std::optional< std::string > m_elapsed;
     };
     
-    class TaskProgressFIFO
+    class StatusFIFO
     {
     public:
         bool empty() const
@@ -44,44 +56,45 @@ namespace task
             return m_fifo.empty();
         }
     
-        void push( const TaskProgress& taskProgress )
+        void push( const Status& status )
         {
             std::lock_guard< std::mutex > lock( m_mutex );
-            m_fifo.push_back( taskProgress );
+            m_fifo.push_back( status );
         }
         
-        TaskProgress pop()
+        Status pop()
         {
             std::lock_guard< std::mutex > lock( m_mutex );
-            TaskProgress front = m_fifo.front();
+            Status front = m_fifo.front();
             m_fifo.pop_front();
             return front;
         }
         
     private:
         mutable std::mutex m_mutex;
-        std::deque< TaskProgress > m_fifo;
+        std::deque< Status > m_fifo;
     };
     
-    class NotifiedTaskProgress
+    class Progress
     {
     public:
-        NotifiedTaskProgress( TaskProgressFIFO& fifo );
+        Progress( StatusFIFO& fifo );
         
-        void setTaskInfo( const std::string& strTaskName, const std::string& strSource, const std::string& strTarget );
-        void setTaskInfo( const std::string& strTaskName, const boost::filesystem::path& fileSource, const std::string& fileTarget );
+        bool isFinished() const;
         
-        void cached( bool bCached );
-        void complete( bool bComplete );
+        void start( const std::string& strTaskName, const std::string& strSource, const std::string& strTarget );
+        void start( const std::string& strTaskName, const boost::filesystem::path& fileSource, const std::string& fileTarget );
+        
+        void setState( Status::State state );
         
         void msg( const std::string& strMsg );
     private:
         std::string getElapsedTime() const;
         
     private:
-        TaskProgressFIFO& m_fifo;
+        StatusFIFO& m_fifo;
         boost::timer::cpu_timer m_timer;
-        TaskProgress m_progress;
+        Status m_status;
     };
     
     class Task
@@ -96,7 +109,7 @@ namespace task
         virtual ~Task();
         
         virtual bool isReady( const RawPtrSet& finished );
-        virtual void run( NotifiedTaskProgress& taskProgress ) = 0;
+        virtual void run( Progress& taskProgress ) = 0;
         
     protected:
         RawPtrSet m_dependencies;

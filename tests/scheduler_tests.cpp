@@ -1,6 +1,7 @@
 
 #include "common/task.hpp"
 #include "common/scheduler.hpp"
+#include "common/assert_verify.hpp"
 
 #include <gtest/gtest.h>
 
@@ -10,24 +11,26 @@
 namespace
 {
     
-    std::ostream& operator <<( std::ostream& os, const task::TaskProgress& taskProgress )
+    std::ostream& operator <<( std::ostream& os, const task::Status& status )
     {
-        if( taskProgress.m_bCached.has_value() )
+        switch( status.m_state )
         {
-            os << taskProgress.m_strTaskName << " cached: " << taskProgress.m_bCached.value();
-        }
-        else if( taskProgress.m_bComplete.has_value() )
-        {
-            os << taskProgress.m_strTaskName << " success: " << taskProgress.m_bComplete.value();
-        }
-        else
-        {
-            os << taskProgress.m_strTaskName << " started";
-        }
-        
-        if( taskProgress.m_elapsed.has_value() )
-        {
-            os << " " << taskProgress.m_elapsed.value();
+            case task::Status::ePending   :
+                THROW_RTE( "Pending task status reported" );
+            case task::Status::eStarted   :
+                os << status.m_strTaskName << " started";
+                break;
+            case task::Status::eCached    :
+                os << status.m_strTaskName << " cached";
+                break;
+            case task::Status::eSucceeded :
+                os << status.m_strTaskName << " success: " << status.m_elapsed.value();
+                break;
+            case task::Status::eFailed    :
+                os << status.m_strTaskName << " failure: " << status.m_elapsed.value();
+                break;
+            default:
+                THROW_RTE( "Unknown task status type" );
         }
         
         return os;
@@ -44,14 +47,14 @@ namespace
             
         }
         
-        virtual void run( task::NotifiedTaskProgress& taskProgress )
+        virtual void run( task::Progress& progress )
         {
-            taskProgress.setTaskInfo( m_strName, m_strName, m_strName );
+            progress.start( m_strName, m_strName, m_strName );
             
             using namespace std::chrono_literals;
             std::this_thread::sleep_for( 1ms );
             
-            taskProgress.complete( true );
+            progress.setState( task::Status::eSucceeded );
         }
     };
     
@@ -66,9 +69,13 @@ namespace
             
         }
         
-        virtual void run( task::NotifiedTaskProgress& taskProgress )
+        virtual void run( task::Progress& progress )
         {
-            taskProgress.setTaskInfo( m_strName, m_strName, m_strName );
+            progress.start( m_strName, m_strName, m_strName );
+            
+            using namespace std::chrono_literals;
+            std::this_thread::sleep_for( 1ms );
+            
             throw std::runtime_error( "fail" );
         }
     };
@@ -115,11 +122,11 @@ TEST( Scheduler, Basic )
     
     Schedule::Ptr pSchedule( new Schedule( tasks ) );
     
-    task::TaskProgressFIFO fifo;
+    task::StatusFIFO fifo;
     
     using namespace std::chrono_literals;
     Scheduler scheduler( fifo, 10ms, ( std::optional< unsigned int >() ) );
-    Scheduler::ScheduleRun::Ptr pRun = scheduler.run( nullptr, pSchedule );
+    Scheduler::Run::Ptr pRun = scheduler.run( nullptr, pSchedule );
     
     //std::thread testSharedFuture
     //(
@@ -153,19 +160,18 @@ TEST( Scheduler, BasicFail1 )
     
     Schedule::Ptr pSchedule( new Schedule( tasks ) );
     
-    TaskProgressFIFO fifo;
+    StatusFIFO fifo;
     
     using namespace std::chrono_literals;
     Scheduler scheduler( fifo, 10ms, ( std::optional< unsigned int >() ) );
-    Scheduler::ScheduleRun::Ptr pRun = scheduler.run( nullptr, pSchedule );
+    Scheduler::Run::Ptr pRun = scheduler.run( nullptr, pSchedule );
     
     ASSERT_THROW( pRun->wait(), std::runtime_error );
     
     {
         while( !fifo.empty() )
         {
-            const task::TaskProgress progress = fifo.pop();
-            std::cout << progress << std::endl;
+            std::cout << fifo.pop() << std::endl;
         }
     }
 }
@@ -187,19 +193,18 @@ TEST( Scheduler, BasicFail2 )
     
     Schedule::Ptr pSchedule( new Schedule( tasks ) );
     
-    TaskProgressFIFO fifo;
+    StatusFIFO fifo;
     
     using namespace std::chrono_literals;
     Scheduler scheduler( fifo, 10ms, ( std::optional< unsigned int >() ) );
-    Scheduler::ScheduleRun::Ptr pRun = scheduler.run( nullptr, pSchedule );
+    Scheduler::Run::Ptr pRun = scheduler.run( nullptr, pSchedule );
     
     ASSERT_THROW( pRun->wait(), std::runtime_error );
     
     {
         while( !fifo.empty() )
         {
-            const task::TaskProgress progress = fifo.pop();
-            std::cout << progress << std::endl;
+            std::cout << fifo.pop() << std::endl;
         }
     }
 }
@@ -218,16 +223,16 @@ TEST( Scheduler, MultiSchedule )
     Schedule::Ptr pSchedule2( new Schedule( tasks2 ) );
     Schedule::Ptr pSchedule3( new Schedule( tasks3 ) );
     
-    TaskProgressFIFO fifo;
+    StatusFIFO fifo;
     
     using namespace std::chrono_literals;
     Scheduler scheduler( fifo, 10ms, ( std::optional< unsigned int >() ) );
     
     int schedule1, schedule2, schedule3;
     
-    Scheduler::ScheduleRun::Ptr pRun1 = scheduler.run( &schedule1, pSchedule1 );
-    Scheduler::ScheduleRun::Ptr pRun2 = scheduler.run( &schedule2, pSchedule2 );
-    Scheduler::ScheduleRun::Ptr pRun3 = scheduler.run( &schedule3, pSchedule3 );
+    Scheduler::Run::Ptr pRun1 = scheduler.run( &schedule1, pSchedule1 );
+    Scheduler::Run::Ptr pRun2 = scheduler.run( &schedule2, pSchedule2 );
+    Scheduler::Run::Ptr pRun3 = scheduler.run( &schedule3, pSchedule3 );
 
     ASSERT_TRUE( pRun1->wait() );
     ASSERT_TRUE( pRun2->wait() );
@@ -245,17 +250,17 @@ TEST( Scheduler, ReSchedule )
     Task::PtrVector tasks1 = createGoodSchedule();
     Schedule::Ptr pSchedule1( new Schedule( tasks1 ) );
     
-    TaskProgressFIFO fifo;
+    StatusFIFO fifo;
     
     using namespace std::chrono_literals;
     Scheduler scheduler( fifo, 10ms, ( std::optional< unsigned int >() ) );
     
     int schedule1;
     
-    Scheduler::ScheduleRun::Ptr pRun1 = scheduler.run( &schedule1, pSchedule1 );
-    Scheduler::ScheduleRun::Ptr pRun2 = scheduler.run( &schedule1, pSchedule1 );
-    Scheduler::ScheduleRun::Ptr pRun3 = scheduler.run( &schedule1, pSchedule1 );
-    Scheduler::ScheduleRun::Ptr pRun4 = scheduler.run( &schedule1, pSchedule1 );
+    Scheduler::Run::Ptr pRun1 = scheduler.run( &schedule1, pSchedule1 );
+    Scheduler::Run::Ptr pRun2 = scheduler.run( &schedule1, pSchedule1 );
+    Scheduler::Run::Ptr pRun3 = scheduler.run( &schedule1, pSchedule1 );
+    Scheduler::Run::Ptr pRun4 = scheduler.run( &schedule1, pSchedule1 );
 
     ASSERT_TRUE( !pRun1->wait() );
     ASSERT_TRUE( !pRun2->wait() );

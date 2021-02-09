@@ -35,16 +35,16 @@ namespace task
     class Scheduler
     {
     public:
-        using ScheduleOwner = void*;
         
-        class ScheduleRun : public std::enable_shared_from_this< ScheduleRun >
+        class Run : public std::enable_shared_from_this< Run >
         {
         public:
-            using Ptr = std::shared_ptr< ScheduleRun >;
+            using Owner = void*;
+            using Ptr = std::shared_ptr< Run >;
             
-            ScheduleRun( Scheduler& scheduler, ScheduleOwner pOwner, Schedule::Ptr pSchedule );
+            Run( Scheduler& scheduler, Owner pOwner, Schedule::Ptr pSchedule );
             
-            ScheduleOwner getOwner() const { return m_pOwner; }
+            Owner getOwner() const { return m_pOwner; }
             
             bool wait();
             void cancel();
@@ -53,11 +53,11 @@ namespace task
             void finished();
             void cancelWithoutStart();
             void runTask( Task::RawPtr pTask );
-            void progress();
+            void next();
             
         private:
             Scheduler& m_scheduler;
-            ScheduleOwner m_pOwner;
+            Owner m_pOwner;
             Schedule::Ptr m_pSchedule;
             Task::RawPtrSet m_pending, m_active, m_finished;
             std::mutex m_mutex;
@@ -68,29 +68,29 @@ namespace task
         };
         
     private:
-        using ScheduleRunMap = std::map< ScheduleOwner, ScheduleRun::Ptr >;
+        using ScheduleRunMap = std::map< Run::Owner, Run::Ptr >;
     public:
         static auto getDefaultAliveRate()
         {
             using namespace std::chrono_literals;
-            static const auto DEFAULT_ALIVE_RATE = 250ms;
+            static const auto DEFAULT_ALIVE_RATE = 100ms;
             return DEFAULT_ALIVE_RATE;
         }
         
-        Scheduler( TaskProgressFIFO& fifo, 
+        Scheduler( StatusFIFO& fifo, 
             std::chrono::milliseconds keepAliveRate, 
             std::optional< unsigned int > maxThreads );
         ~Scheduler();
         
-        ScheduleRun::Ptr run( ScheduleOwner pOwner, Schedule::Ptr pSchedule );
+        Run::Ptr run( Run::Owner pOwner, Schedule::Ptr pSchedule );
         void stop();
         
     //private:
         void OnKeepAlive( const boost::system::error_code& ec );
-        void OnRunComplete( ScheduleRun::Ptr pRun );
+        void OnRunComplete( Run::Ptr pRun );
         
     private:
-        TaskProgressFIFO& m_fifo;
+        StatusFIFO& m_fifo;
         bool m_bStop;
         std::mutex m_mutex;
         boost::asio::io_context m_queue;

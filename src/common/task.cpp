@@ -15,58 +15,84 @@ namespace task
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
-NotifiedTaskProgress::NotifiedTaskProgress( TaskProgressFIFO& fifo )
+Progress::Progress( StatusFIFO& fifo )
     :   m_fifo( fifo )
 {
-    m_timer.start();
 }
 
-void NotifiedTaskProgress::setTaskInfo( const std::string& strTaskName, 
+bool Progress::isFinished() const
+{
+    switch( m_status.m_state )
+    {
+        case Status::ePending   :
+        case Status::eStarted   :
+            return false;
+        case Status::eCached    :
+        case Status::eSucceeded :
+        case Status::eFailed    :
+            return true;
+        default:
+            THROW_RTE( "Unknown task state" );
+    }
+}
+
+void Progress::start( const std::string& strTaskName, 
         const std::string& strSource, const std::string& strTarget )
 {
-    m_progress.m_strTaskName        = strTaskName;
-    m_progress.m_optSourceString    = strSource;
-    m_progress.m_optTargetString    = strTarget;
-    m_progress.m_elapsed            = getElapsedTime();
-    m_fifo.push( m_progress );
+    VERIFY_RTE( m_status.m_state == Status::ePending );
+    m_status.m_state              = Status::eStarted;
+    m_timer.start();
+    
+    m_status.m_strTaskName        = strTaskName;
+    m_status.m_optSourceString    = strSource;
+    m_status.m_optTargetString    = strTarget;
+    m_status.m_elapsed            = getElapsedTime();
+    m_fifo.push( m_status );
 }
 
-void NotifiedTaskProgress::setTaskInfo( const std::string& strTaskName, 
+void Progress::start( const std::string& strTaskName, 
         const boost::filesystem::path& fileSource, const std::string& fileTarget )
 {
-    m_progress.m_strTaskName        = strTaskName;
-    m_progress.m_optSourcePath      = fileSource;
-    m_progress.m_optTargetPath      = fileTarget;
-    m_progress.m_elapsed            = getElapsedTime();
-    m_fifo.push( m_progress );
+    VERIFY_RTE( m_status.m_state == Status::ePending );
+    m_status.m_state              = Status::eStarted;
+    m_timer.start();
+    
+    m_status.m_strTaskName        = strTaskName;
+    m_status.m_optSourcePath      = fileSource;
+    m_status.m_optTargetPath      = fileTarget;
+    m_status.m_elapsed            = getElapsedTime();
+    m_fifo.push( m_status );
 }
 
-void NotifiedTaskProgress::cached( bool bCached )                        
+void Progress::setState( Status::State state )
 {
-    m_progress.m_bCached = bCached;
-    m_progress.m_elapsed            = getElapsedTime();
-    if( bCached )
+    m_status.m_state = state;
+    switch( state )
     {
-        m_timer.stop();
+        case Status::ePending   :
+        case Status::eStarted   :
+            break;
+        case Status::eCached    :
+        case Status::eSucceeded :
+        case Status::eFailed    :
+            m_status.m_elapsed = getElapsedTime();
+            m_timer.stop();
+            break;
+        default:
+            THROW_RTE( "Unknown task state" );
     }
-    m_fifo.push( m_progress );
-}
-void NotifiedTaskProgress::complete( bool bComplete )                    
-{
-    m_progress.m_bComplete = bComplete;
-    m_progress.m_elapsed            = getElapsedTime();
-    m_timer.stop();
-    m_fifo.push( m_progress );
+    
+    m_fifo.push( m_status );
 }
 
-void NotifiedTaskProgress::msg( const std::string& strMsg )              
+void Progress::msg( const std::string& strMsg )              
 {
-    m_progress.m_elapsed            = getElapsedTime();
-    m_progress.m_msgs.push_back( strMsg );
-    m_fifo.push( m_progress );
+    m_status.m_elapsed = getElapsedTime();
+    m_status.m_msgs.push_back( strMsg );
+    m_fifo.push( m_status );
 }
 
-std::string NotifiedTaskProgress::getElapsedTime() const
+std::string Progress::getElapsedTime() const
 {
     return m_timer.format( 3, "%w" );
 }

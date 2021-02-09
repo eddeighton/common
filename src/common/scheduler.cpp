@@ -19,7 +19,7 @@ namespace task
 
     ///////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////
-    Scheduler::ScheduleRun::ScheduleRun( Scheduler& scheduler, ScheduleOwner pOwner, Schedule::Ptr pSchedule )
+    Scheduler::Run::Run( Scheduler& scheduler, Owner pOwner, Schedule::Ptr pSchedule )
         :   m_scheduler( scheduler ),
             m_pOwner( pOwner ),
             m_pSchedule( pSchedule ),
@@ -32,7 +32,7 @@ namespace task
         }
     }
     
-    bool Scheduler::ScheduleRun::wait()
+    bool Scheduler::Run::wait()
     {
         if( m_future.valid() )
         {
@@ -46,7 +46,7 @@ namespace task
         }
     }
     
-    void Scheduler::ScheduleRun::cancel()
+    void Scheduler::Run::cancel()
     {
         std::lock_guard< std::mutex > lock( m_mutex );
         m_pending.clear();
@@ -58,7 +58,7 @@ namespace task
         }
     }
     
-    void Scheduler::ScheduleRun::finished()
+    void Scheduler::Run::finished()
     {
         if( m_pExceptionPtr.has_value() )
         {
@@ -70,7 +70,7 @@ namespace task
         }
     }
     
-    void Scheduler::ScheduleRun::cancelWithoutStart()
+    void Scheduler::Run::cancelWithoutStart()
     {
         std::lock_guard< std::mutex > lock( m_mutex );
         m_pending.clear();
@@ -78,13 +78,15 @@ namespace task
         finished();
     }
 
-    void Scheduler::ScheduleRun::runTask( Task::RawPtr pTask )
+    void Scheduler::Run::runTask( Task::RawPtr pTask )
     {
-        NotifiedTaskProgress progress( m_scheduler.m_fifo );
+        Progress progress( m_scheduler.m_fifo );
                             
         try
         {
             pTask->run( progress );
+            
+            VERIFY_RTE( progress.isFinished() );
             
             bool bRemaining = true;
             bool bCancelled = false;
@@ -106,7 +108,7 @@ namespace task
             if( bRemaining )
             {
                 m_scheduler.m_queue.post( 
-                    std::bind( &Scheduler::ScheduleRun::progress, this ) );
+                    std::bind( &Scheduler::Run::next, this ) );
             }
             else
             {
@@ -115,7 +117,7 @@ namespace task
         }
         catch( std::exception& ex )
         {
-            progress.complete( false );
+            progress.setState( Status::eFailed );
             
             std::lock_guard< std::mutex > lock( m_mutex );
             
@@ -134,7 +136,7 @@ namespace task
         }
     }
     
-    void Scheduler::ScheduleRun::progress()
+    void Scheduler::Run::next()
     {
         Task::RawPtrSet ready;
         {
@@ -164,14 +166,14 @@ namespace task
             for( Task::RawPtr pTask : ready )
             {
                 m_scheduler.m_queue.post(
-                    std::bind( &Scheduler::ScheduleRun::runTask, this, pTask ) );
+                    std::bind( &Scheduler::Run::runTask, this, pTask ) );
             }
         }
     }
     
     ///////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////
-    Scheduler::Scheduler( TaskProgressFIFO& fifo, 
+    Scheduler::Scheduler( StatusFIFO& fifo, 
                     std::chrono::milliseconds keepAliveRate, 
                     std::optional< unsigned int > maxThreads )
 		:	m_fifo( fifo ),
@@ -224,11 +226,11 @@ namespace task
 		}
 	}
     
-    void Scheduler::OnRunComplete( ScheduleRun::Ptr pRun )
+    void Scheduler::OnRunComplete( Run::Ptr pRun )
     {
         std::lock_guard< std::mutex > lock( m_mutex );
         
-        ScheduleOwner pRunOwnder = pRun->getOwner();
+        Run::Owner pRunOwnder = pRun->getOwner();
         
         ScheduleRunMap::iterator iFind = m_runs.find( pRunOwnder );
         if( iFind != m_runs.end() )
@@ -240,10 +242,10 @@ namespace task
             ScheduleRunMap::iterator iFindPending = m_pending.find( pRunOwnder );
             if( iFindPending != m_pending.end() )
             {
-                ScheduleRun::Ptr pPendingRun = iFindPending->second;
+                Run::Ptr pPendingRun = iFindPending->second;
                 m_pending.erase( iFindPending );
                 m_runs.insert( std::make_pair( pRunOwnder, pPendingRun ) );
-                m_queue.post( std::bind( &Scheduler::ScheduleRun::progress, pPendingRun ) );
+                m_queue.post( std::bind( &Scheduler::Run::next, pPendingRun ) );
             }
         }
         else
@@ -252,21 +254,21 @@ namespace task
         }
     }
     
-    Scheduler::ScheduleRun::Ptr Scheduler::run( ScheduleOwner pOwner, Schedule::Ptr pSchedule )
+    Scheduler::Run::Ptr Scheduler::run( Run::Owner pOwner, Schedule::Ptr pSchedule )
     {
         std::lock_guard< std::mutex > lock( m_mutex );
         
         ScheduleRunMap::iterator iFind = m_runs.find( pOwner );
         if( iFind != m_runs.end() )
         {
-            ScheduleRun::Ptr pExistingRun = iFind->second;
-            ScheduleRun::Ptr pNewScheduleRun( new ScheduleRun( *this, pOwner, pSchedule ) );
+            Run::Ptr pExistingRun = iFind->second;
+            Run::Ptr pNewScheduleRun( new Run( *this, pOwner, pSchedule ) );
             
             //overwrite any existing pending schedule run
             ScheduleRunMap::iterator iFindPending = m_pending.find( pOwner );
             if( iFindPending != m_pending.end() )
             {
-                ScheduleRun::Ptr pPendingRun = iFindPending->second;
+                Run::Ptr pPendingRun = iFindPending->second;
                 m_pending.erase( iFindPending );
                 pPendingRun->cancelWithoutStart();
             }
@@ -279,11 +281,11 @@ namespace task
         }
         else
         {
-            ScheduleRun::Ptr pScheduleRun( new ScheduleRun( *this, pOwner, pSchedule ) );
+            Run::Ptr pScheduleRun( new Run( *this, pOwner, pSchedule ) );
             
             m_runs.insert( std::make_pair( pOwner, pScheduleRun ) );
             
-            m_queue.post( std::bind( &Scheduler::ScheduleRun::progress, pScheduleRun ) );
+            m_queue.post( std::bind( &Scheduler::Run::next, pScheduleRun ) );
             
             return pScheduleRun;
         }
