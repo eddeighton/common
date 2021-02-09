@@ -4,7 +4,7 @@
 
 #include "common/hash.hpp"
 
-#include <boost/filesystem/path.hpp>
+#include "boost/filesystem/path.hpp"
 #include "boost/timer/timer.hpp"
 
 #include <string>
@@ -31,6 +31,7 @@ namespace task
         std::optional< bool > m_bComplete;
         std::vector< std::string > m_msgs;
         
+        std::optional< std::string > m_elapsed;
     };
     
     class TaskProgressFIFO
@@ -76,6 +77,7 @@ namespace task
         
         void msg( const std::string& strMsg );
     private:
+        std::string getElapsedTime() const;
         
     private:
         TaskProgressFIFO& m_fifo;
@@ -103,22 +105,6 @@ namespace task
     };
     
     
-    class Stash
-    {
-    public:
-        Stash( const boost::filesystem::path& stashDirectory );
-        
-        common::HashCode getBuildHashCode( const boost::filesystem::path& key ) const;
-        void setBuildHashCode( const boost::filesystem::path& key, common::HashCode hashCode );
-        void loadBuildHashCodes( const boost::filesystem::path& file );
-        void saveBuildHashCodes( const boost::filesystem::path& file ) const;
-        
-        void stash( const boost::filesystem::path& file, const common::HashCode& code );
-        bool restore( const boost::filesystem::path& file, const common::HashCode& code );
-    private:
-        struct Pimpl;
-        std::shared_ptr< Pimpl > m_pPimpl;
-    };
     
 }
 
