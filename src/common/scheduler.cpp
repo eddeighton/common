@@ -55,7 +55,18 @@ namespace task
         if( m_pending.empty() && m_active.empty() )
         {
             m_scheduler.OnRunComplete( shared_from_this() );
-            m_promise.set_value( false );
+        }
+    }
+    
+    void Scheduler::ScheduleRun::finished()
+    {
+        if( m_pExceptionPtr.has_value() )
+        {
+            m_promise.set_exception( m_pExceptionPtr.value() );
+        }
+        else
+        {
+            m_promise.set_value( !m_bCancelled );
         }
     }
     
@@ -64,7 +75,7 @@ namespace task
         std::lock_guard< std::mutex > lock( m_mutex );
         m_pending.clear();
         m_bCancelled = true;
-        m_promise.set_value( false );
+        finished();
     }
 
     void Scheduler::ScheduleRun::runTask( Task::RawPtr pTask )
@@ -100,7 +111,6 @@ namespace task
             else
             {
                 m_scheduler.OnRunComplete( shared_from_this() );
-                m_promise.set_value( !bCancelled );
             }
         }
         catch( std::exception& ex )
@@ -115,13 +125,12 @@ namespace task
             
             m_pending.clear();
             m_bCancelled = true;
+            m_pExceptionPtr = std::current_exception();
             
             if( m_pending.empty() && m_active.empty() )
             {
                 m_scheduler.OnRunComplete( shared_from_this() );
-            }              
-                                    
-            m_promise.set_exception( std::current_exception() );
+            }
         }
     }
     
@@ -226,8 +235,7 @@ namespace task
         {
             VERIFY_RTE( iFind->second == pRun );
             m_runs.erase( iFind );
-            
-            
+            pRun->finished();
             
             ScheduleRunMap::iterator iFindPending = m_pending.find( pRunOwnder );
             if( iFindPending != m_pending.end() )

@@ -50,6 +50,7 @@ namespace task
             void cancel();
             
         //private:
+            void finished();
             void cancelWithoutStart();
             void runTask( Task::RawPtr pTask );
             void progress();
@@ -63,6 +64,7 @@ namespace task
             std::promise< bool > m_promise;
             std::future< bool > m_future;
             bool m_bCancelled;
+            std::optional< std::exception_ptr > m_pExceptionPtr;
         };
         
     private:

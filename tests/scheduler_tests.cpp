@@ -143,17 +143,17 @@ TEST( Scheduler, Basic )
     //}
 }
 
-TEST( Scheduler, BasicFail )
+TEST( Scheduler, BasicFail1 )
 {
     using namespace task;
     
     std::ostringstream osLog;
     
-    task::Task::PtrVector tasks = createBadSchedule();
+    Task::PtrVector tasks = createBadSchedule();
     
     Schedule::Ptr pSchedule( new Schedule( tasks ) );
     
-    task::TaskProgressFIFO fifo;
+    TaskProgressFIFO fifo;
     
     using namespace std::chrono_literals;
     Scheduler scheduler( fifo, 10ms, ( std::optional< unsigned int >() ) );
@@ -168,9 +168,41 @@ TEST( Scheduler, BasicFail )
             std::cout << progress << std::endl;
         }
     }
-    
 }
 
+TEST( Scheduler, BasicFail2 )
+{
+    using namespace task;
+    
+    std::ostringstream osLog;
+    
+    Task::PtrVector tasks1 = createGoodSchedule();
+    Task::PtrVector tasks2 = createBadSchedule();
+    Task::PtrVector tasks3 = createBadSchedule();
+    
+    Task::PtrVector tasks;
+    std::copy( tasks1.begin(), tasks1.end(), std::back_inserter( tasks ) );
+    std::copy( tasks2.begin(), tasks2.end(), std::back_inserter( tasks ) );
+    std::copy( tasks3.begin(), tasks3.end(), std::back_inserter( tasks ) );
+    
+    Schedule::Ptr pSchedule( new Schedule( tasks ) );
+    
+    TaskProgressFIFO fifo;
+    
+    using namespace std::chrono_literals;
+    Scheduler scheduler( fifo, 10ms, ( std::optional< unsigned int >() ) );
+    Scheduler::ScheduleRun::Ptr pRun = scheduler.run( nullptr, pSchedule );
+    
+    ASSERT_THROW( pRun->wait(), std::runtime_error );
+    
+    {
+        while( !fifo.empty() )
+        {
+            const task::TaskProgress progress = fifo.pop();
+            std::cout << progress << std::endl;
+        }
+    }
+}
 
 TEST( Scheduler, MultiSchedule )
 {
@@ -178,15 +210,15 @@ TEST( Scheduler, MultiSchedule )
     
     std::ostringstream osLog;
     
-    task::Task::PtrVector tasks1 = createGoodSchedule();
-    task::Task::PtrVector tasks2 = createGoodSchedule();
-    task::Task::PtrVector tasks3 = createGoodSchedule();
+    Task::PtrVector tasks1 = createGoodSchedule();
+    Task::PtrVector tasks2 = createGoodSchedule();
+    Task::PtrVector tasks3 = createGoodSchedule();
     
     Schedule::Ptr pSchedule1( new Schedule( tasks1 ) );
     Schedule::Ptr pSchedule2( new Schedule( tasks2 ) );
     Schedule::Ptr pSchedule3( new Schedule( tasks3 ) );
     
-    task::TaskProgressFIFO fifo;
+    TaskProgressFIFO fifo;
     
     using namespace std::chrono_literals;
     Scheduler scheduler( fifo, 10ms, ( std::optional< unsigned int >() ) );
@@ -210,10 +242,10 @@ TEST( Scheduler, ReSchedule )
     
     std::ostringstream osLog;
     
-    task::Task::PtrVector tasks1 = createGoodSchedule();
+    Task::PtrVector tasks1 = createGoodSchedule();
     Schedule::Ptr pSchedule1( new Schedule( tasks1 ) );
     
-    task::TaskProgressFIFO fifo;
+    TaskProgressFIFO fifo;
     
     using namespace std::chrono_literals;
     Scheduler scheduler( fifo, 10ms, ( std::optional< unsigned int >() ) );
