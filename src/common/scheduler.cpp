@@ -55,11 +55,14 @@ namespace task
     
     void Scheduler::Run::complete()
     {
-        std::lock_guard< std::recursive_mutex > lock( m_mutex );
-        if( !m_bComplete )
+        Run::Ptr pThis = shared_from_this();
         {
-            m_bComplete = true;
-            m_scheduler.OnRunComplete( shared_from_this() );
+            std::lock_guard< std::recursive_mutex > lock( m_mutex );
+            if( !m_bComplete )
+            {
+                m_bComplete = true;
+                m_scheduler.OnRunComplete( pThis );
+            }
         }
     }
     
