@@ -25,6 +25,8 @@ namespace task
             m_pOwner( pOwner ),
             m_pSchedule( pSchedule ),
             m_bCancelled( false ),
+            m_bFinished( false ),
+            m_bComplete( false ),
             m_future( m_promise.get_future() )
     {
         for( Task::Ptr pTask : m_pSchedule->getTasks() )
@@ -51,6 +53,16 @@ namespace task
         }
     }
     
+    void Scheduler::Run::complete()
+    {
+        std::lock_guard< std::recursive_mutex > lock( m_mutex );
+        if( !m_bComplete )
+        {
+            m_bComplete = true;
+            m_scheduler.OnRunComplete( shared_from_this() );
+        }
+    }
+    
     void Scheduler::Run::cancel()
     {
         std::lock_guard< std::recursive_mutex > lock( m_mutex );
@@ -61,7 +73,7 @@ namespace task
             
             if( m_pending.empty() && m_active.empty() )
             {
-                m_scheduler.OnRunComplete( shared_from_this() );
+                complete();
             }
         }
     }
@@ -69,13 +81,17 @@ namespace task
     void Scheduler::Run::finished()
     {
         std::lock_guard< std::recursive_mutex > lock( m_mutex );
-        if( m_pExceptionPtr.has_value() )
+        if( !m_bFinished )
         {
-            m_promise.set_exception( m_pExceptionPtr.value() );
-        }
-        else
-        {
-            m_promise.set_value( !m_bCancelled );
+            m_bFinished = true;
+            if( m_pExceptionPtr.has_value() )
+            {
+                m_promise.set_exception( m_pExceptionPtr.value() );
+            }
+            else
+            {
+                m_promise.set_value( !m_bCancelled );
+            }
         }
     }
     
@@ -119,7 +135,7 @@ namespace task
             }
             else
             {
-                m_scheduler.OnRunComplete( shared_from_this() );
+                complete();
             }
         }
         catch( std::exception& ex )
@@ -138,7 +154,7 @@ namespace task
             
             if( m_pending.empty() && m_active.empty() )
             {
-                m_scheduler.OnRunComplete( shared_from_this() );
+                complete();
             }
         }
     }
@@ -154,8 +170,7 @@ namespace task
             }
             else
             {
-                m_bCancelled = true;
-                m_scheduler.OnRunComplete( shared_from_this() );
+                complete();
             }
         }
     }

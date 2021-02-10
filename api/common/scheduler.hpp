@@ -51,6 +51,7 @@ namespace task
             void cancel();
             
         //private:
+            void complete();
             void finished();
             void cancelWithoutStart();
             void runTask( Task::RawPtr pTask );
@@ -65,7 +66,7 @@ namespace task
             mutable std::recursive_mutex m_mutex;
             std::promise< bool > m_promise;
             std::future< bool > m_future;
-            bool m_bCancelled;
+            bool m_bCancelled, m_bFinished, m_bComplete;
             std::optional< std::exception_ptr > m_pExceptionPtr;
         };
         
