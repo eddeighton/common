@@ -73,16 +73,17 @@ namespace task
     private:
         using ScheduleRunMap = std::map< Run::Owner, Run::Ptr >;
     public:
-        static auto getDefaultAliveRate()
+        static std::chrono::milliseconds getDefaultAliveRate()
         {
             using namespace std::chrono_literals;
             static const auto DEFAULT_ALIVE_RATE = 100ms;
             return DEFAULT_ALIVE_RATE;
         }
+        static const inline auto DEFAULT_KEEP_ALIVE = getDefaultAliveRate();
         
         Scheduler( StatusFIFO& fifo, 
-            std::chrono::milliseconds keepAliveRate, 
-            std::optional< unsigned int > maxThreads );
+            std::chrono::milliseconds keepAliveRate = DEFAULT_KEEP_ALIVE, 
+            std::optional< unsigned int > maxThreads = std::optional< unsigned int >() );
         ~Scheduler();
         
         Run::Ptr run( Run::Owner pOwner, Schedule::Ptr pSchedule );

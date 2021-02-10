@@ -107,7 +107,7 @@ TEST( Scheduler, Empty )
     task::StatusFIFO fifo;
     
     using namespace std::chrono_literals;
-    Scheduler scheduler( fifo, getKeepAliveTime(), ( std::optional< unsigned int >() ) );
+    Scheduler scheduler( fifo, getKeepAliveTime() );
     Scheduler::Run::Ptr pRun = scheduler.run( nullptr, pSchedule );
     
     ASSERT_TRUE( pRun->wait() );
@@ -126,7 +126,7 @@ TEST( Scheduler, Basic )
     task::StatusFIFO fifo;
     
     using namespace std::chrono_literals;
-    Scheduler scheduler( fifo, getKeepAliveTime(), ( std::optional< unsigned int >() ) );
+    Scheduler scheduler( fifo, getKeepAliveTime() );
     Scheduler::Run::Ptr pRun = scheduler.run( nullptr, pSchedule );
     
     //std::thread testSharedFuture
@@ -177,7 +177,7 @@ TEST( Scheduler, BasicFail1 )
     StatusFIFO fifo;
     
     using namespace std::chrono_literals;
-    Scheduler scheduler( fifo, getKeepAliveTime(), ( std::optional< unsigned int >() ) );
+    Scheduler scheduler( fifo, getKeepAliveTime() );
     Scheduler::Run::Ptr pRun = scheduler.run( nullptr, pSchedule );
     
     ASSERT_THROW( pRun->wait(), std::runtime_error );
@@ -210,7 +210,7 @@ TEST( Scheduler, BasicFail2 )
     StatusFIFO fifo;
     
     using namespace std::chrono_literals;
-    Scheduler scheduler( fifo, getKeepAliveTime(), ( std::optional< unsigned int >() ) );
+    Scheduler scheduler( fifo, getKeepAliveTime() );
     Scheduler::Run::Ptr pRun = scheduler.run( nullptr, pSchedule );
     
     ASSERT_THROW( pRun->wait(), std::runtime_error );
@@ -240,7 +240,7 @@ TEST( Scheduler, MultiSchedule )
     StatusFIFO fifo;
     
     using namespace std::chrono_literals;
-    Scheduler scheduler( fifo, getKeepAliveTime(), ( std::optional< unsigned int >() ) );
+    Scheduler scheduler( fifo, getKeepAliveTime() );
     
     int schedule1, schedule2, schedule3;
     
@@ -267,7 +267,7 @@ TEST( Scheduler, ReSchedule )
     StatusFIFO fifo;
     
     using namespace std::chrono_literals;
-    Scheduler scheduler( fifo, getKeepAliveTime(), ( std::optional< unsigned int >() ) );
+    Scheduler scheduler( fifo, getKeepAliveTime() );
     
     const int schedule1 = 0;
     
