@@ -75,8 +75,9 @@ std::ostream& operator<<( std::ostream& os, const Status& status )
 }
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
-Progress::Progress( StatusFIFO& fifo )
-    :   m_fifo( fifo )
+Progress::Progress( StatusFIFO& fifo, Status::Owner owner )
+    :   m_fifo( fifo ),
+        m_status( owner )
 {
 }
 

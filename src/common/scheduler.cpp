@@ -108,7 +108,7 @@ namespace task
 
     void Scheduler::Run::runTask( Task::RawPtr pTask )
     {
-        Progress progress( m_scheduler.m_fifo );
+        Progress progress( m_scheduler.m_fifo, m_pOwner );
                             
         try
         {
@@ -309,7 +309,8 @@ namespace task
     Scheduler::Run::Ptr Scheduler::run( Run::Owner pOwner, Schedule::Ptr pSchedule )
     {
         Run::Ptr pScheduleRun( new Run( *this, pOwner, pSchedule ) );
-        
+
+        Run::Ptr pOldRun;
         {
             std::lock_guard< std::recursive_mutex > lock( m_mutex );
             
@@ -327,10 +328,8 @@ namespace task
                 
                 m_pending.insert( std::make_pair( pOwner, pScheduleRun ) );
                 
-                if( !iFind->second->isCancelled() )
-                {
-                    iFind->second->cancel();
-                }
+                //careful - DO NOT lock the run here while have outer lock
+                pOldRun = iFind->second;
             }
             else
             {
@@ -338,6 +337,14 @@ namespace task
                     m_runs.insert( std::make_pair( pOwner, pScheduleRun ) );
                 VERIFY_RTE( ibResult.second );
                 m_queue.post( std::bind( &Scheduler::Run::start, pScheduleRun ) );
+            }
+        }
+
+        if( pOldRun )
+        {
+            if( !pOldRun->isCancelled() )
+            {
+                pOldRun->cancel();
             }
         }
         

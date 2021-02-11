@@ -23,6 +23,8 @@ namespace task
     class Status
     {
     public:
+        using Owner = const void*;
+        
         enum State
         {
             ePending,
@@ -32,11 +34,13 @@ namespace task
             eFailed
         };
         
-        Status()
-            :   m_state( ePending )
+        Status( Owner owner )
+            :   m_state( ePending ),
+                m_owner( owner )
         {}
         
         State m_state;
+        Owner m_owner;
         
         using Subject = std::variant< std::string, boost::filesystem::path >;
         
@@ -81,7 +85,7 @@ namespace task
     class Progress
     {
     public:
-        Progress( StatusFIFO& fifo );
+        Progress( StatusFIFO& fifo, Status::Owner owner );
         
         const Status& getStatus() const { return m_status; }
         bool isFinished() const;

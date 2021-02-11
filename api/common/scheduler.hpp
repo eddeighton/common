@@ -60,7 +60,7 @@ namespace task
             
         private:
             Scheduler& m_scheduler;
-            Owner m_pOwner;
+            const Owner m_pOwner;
             Schedule::Ptr m_pSchedule;
             Task::RawPtrSet m_pending, m_active, m_finished;
             mutable std::recursive_mutex m_mutex;
