@@ -134,7 +134,7 @@ namespace task
             if( bRemaining )
             {
                 m_scheduler.m_queue.post( 
-                    std::bind( &Scheduler::Run::next, this ) );
+                    std::bind( &Scheduler::Run::next, shared_from_this() ) );
             }
             else
             {
@@ -208,7 +208,7 @@ namespace task
             for( Task::RawPtr pTask : ready )
             {
                 m_scheduler.m_queue.post(
-                    std::bind( &Scheduler::Run::runTask, this, pTask ) );
+                    std::bind( &Scheduler::Run::runTask, shared_from_this(), pTask ) );
             }
         }
     
