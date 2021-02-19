@@ -38,6 +38,7 @@ namespace task
         
         class Run : public std::enable_shared_from_this< Run >
         {
+            friend class Scheduler;
         public:
             using Owner = const void*;
             using Ptr = std::shared_ptr< Run >;
@@ -53,7 +54,6 @@ namespace task
         //private:
             void complete();
             void finished();
-            void cancelWithoutStart();
             void runTask( Task::RawPtr pTask );
             void start();
             void next();
@@ -66,7 +66,7 @@ namespace task
             mutable std::recursive_mutex m_mutex;
             std::promise< bool > m_promise;
             std::future< bool > m_future;
-            bool m_bCancelled, m_bFinished, m_bComplete;
+            bool m_bStarted, m_bCancelled, m_bFinished, m_bComplete;
             std::optional< std::exception_ptr > m_pExceptionPtr;
         };
         

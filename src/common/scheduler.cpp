@@ -24,6 +24,7 @@ namespace task
         :   m_scheduler( scheduler ),
             m_pOwner( pOwner ),
             m_pSchedule( pSchedule ),
+            m_bStarted( false ),
             m_bCancelled( false ),
             m_bFinished( false ),
             m_bComplete( false ),
@@ -74,9 +75,13 @@ namespace task
             m_pending.clear();
             m_bCancelled = true;
             
-            if( m_pending.empty() && m_active.empty() )
+            if( m_bStarted )
             {
                 complete();
+            }
+            else
+            {
+                finished();
             }
         }
     }
@@ -96,14 +101,6 @@ namespace task
                 m_promise.set_value( !m_bCancelled );
             }
         }
-    }
-    
-    void Scheduler::Run::cancelWithoutStart()
-    {
-        std::lock_guard< std::recursive_mutex > lock( m_mutex );
-        m_pending.clear();
-        m_bCancelled = true;
-        finished();
     }
 
     void Scheduler::Run::runTask( Task::RawPtr pTask )
@@ -302,6 +299,7 @@ namespace task
             auto ibResult =
                 m_runs.insert( std::make_pair( pRunOwner, pPendingRun ) );
             VERIFY_RTE( ibResult.second );
+            pPendingRun->m_bStarted = true;
             m_queue.post( std::bind( &Scheduler::Run::start, pPendingRun ) );
         }
     }
@@ -323,7 +321,7 @@ namespace task
                 {
                     Run::Ptr pPendingRun = iFindPending->second;
                     m_pending.erase( iFindPending );
-                    pPendingRun->cancelWithoutStart();
+                    pPendingRun->cancel();
                 }
                 
                 m_pending.insert( std::make_pair( pOwner, pScheduleRun ) );
@@ -336,6 +334,7 @@ namespace task
                 auto ibResult =
                     m_runs.insert( std::make_pair( pOwner, pScheduleRun ) );
                 VERIFY_RTE( ibResult.second );
+                pScheduleRun->m_bStarted = true;
                 m_queue.post( std::bind( &Scheduler::Run::start, pScheduleRun ) );
             }
         }
