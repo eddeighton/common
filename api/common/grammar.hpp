@@ -119,6 +119,30 @@ namespace boost
                 SkipGrammarType(),
                 result );
         }
+        
+        template< 
+            class GrammarType, 
+            typename ResultType >
+        inline void invoke_parser_noskip( ParseResult& parseResult, ResultType& result, std::ostream& errorStream )
+        {
+            GrammarType grammar;
+            {
+                boost::phoenix::function< error_handler< LinePosIterator > > const eHandler( errorStream );
+                boost::spirit::qi::on_error< boost::spirit::qi::fail >(
+                    grammar.m_main_rule,
+                    eHandler(
+                        boost::spirit::qi::_1,
+                        boost::spirit::qi::_2,
+                        boost::spirit::qi::_3,
+                        boost::spirit::qi::_4 ) );
+            }
+            
+            parseResult.bParseSucceeded = boost::spirit::qi::parse(
+                parseResult.iterReached,
+                parseResult.iterEnd,
+                grammar,
+                result );
+        }
 
         template< 
             class GrammarType, 
