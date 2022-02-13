@@ -17,7 +17,7 @@ namespace common
         return left ^ ( right + 0x9e3779b9 + ( left << 6 ) + ( left >> 2 ) );
     }
     
-    inline HashCode hash_combine( HashCode& seed ) { }
+    inline HashCode hash_combine( HashCode& seed ) { return seed; }
     
     inline HashCode hash_combine( std::initializer_list< HashCode > hashCodes ) 
     {

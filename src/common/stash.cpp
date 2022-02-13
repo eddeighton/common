@@ -9,6 +9,7 @@
 #include <map>
 #include <istream>
 #include <ostream>
+#include <mutex>
 
 namespace task
 {

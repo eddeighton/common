@@ -41,19 +41,19 @@ namespace Preprocessor
     class ProprocessorGrammar : public boost::spirit::qi::grammar< Iterator, PreprocessVariantVector() >
     {
     public:
-        ProprocessorGrammar(  ) 
+        ProprocessorGrammar(  )
         :   ProprocessorGrammar::base_type( m_main_rule, "proprocessor" )
         {
             m_include_directive_rule = boost::spirit::qi::lit( "#include<" ) >> *( boost::spirit::ascii::char_ - '>')
 				[ boost::phoenix::push_back( boost::spirit::_val, boost::spirit::qi::_1 ) ] >> boost::spirit::qi::lit( ">" );
-        
+
             m_string_rule =  +( !boost::spirit::qi::lit( "#include<" ) >> boost::spirit::ascii::char_ )
 				[ boost::phoenix::push_back( boost::spirit::_val, boost::spirit::qi::_1 ) ];
-        
-            m_proprocess_variant_rule = 
-				m_include_directive_rule[ boost::spirit::_val = boost::spirit::qi::_1 ] | 
+
+            m_proprocess_variant_rule =
+				m_include_directive_rule[ boost::spirit::_val = boost::spirit::qi::_1 ] |
 				m_string_rule[ boost::spirit::_val = boost::spirit::qi::_1 ];
-        
+
             m_main_rule = *m_proprocess_variant_rule
 				[ boost::phoenix::push_back( boost::spirit::_val, boost::spirit::qi::_1 ) ];
         }
@@ -61,7 +61,7 @@ namespace Preprocessor
         boost::spirit::qi::rule< Iterator, std::string() >              m_string_rule;
         boost::spirit::qi::rule< Iterator, PreprocessVariant() >        m_proprocess_variant_rule;
         boost::spirit::qi::rule< Iterator, PreprocessVariantVector() >  m_main_rule;
-    
+
     };
 
     class PreprocessorVisitor : public boost::static_visitor< boost::optional< const IncludeDirective& > >
@@ -92,34 +92,34 @@ namespace Preprocessor
     static void preprocess_string( const std::string& str, T& includeFunctor, std::ostream& os )
     {
         PreprocessVariantVector result;
-    
-        std::string::const_iterator 
+
+        std::string::const_iterator
             iBegin = str.begin(),
             iEnd = str.end();
-    
+
         ProprocessorGrammar< std::string::const_iterator > grammar;
-    
+
         const bool r = phrase_parse(
-            iBegin,                          
-            iEnd,                        
+            iBegin,
+            iEnd,
             grammar,
             boost::spirit_ext::NoSkipGrammar< std::string::const_iterator >(),
             result );
-    
+
         VERIFY_RTE( r );
 
         for( PreprocessVariantVector::const_iterator i = result.begin(),
              iEnd = result.end();
              i!=iEnd; ++i )
         {
-            if( boost::optional< const IncludeDirective& > opt = 
+            if( boost::optional< const IncludeDirective& > opt =
                     boost::apply_visitor( ( PreprocessorVisitor() ), *i ) )
             {
                 os << includeFunctor( opt.get() );
             }
             else
             {
-                boost::optional< const std::string& > optString = 
+                boost::optional< const std::string& > optString =
                     boost::apply_visitor( boost::TypeAccessor< const std::string >(), *i );
                 VERIFY_RTE( optString );
                 os << optString.get();

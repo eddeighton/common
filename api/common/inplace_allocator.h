@@ -2,6 +2,8 @@
 #ifndef INPLACE_ALLOCATOR_20_12_2015
 #define INPLACE_ALLOCATOR_20_12_2015
 
+#include <cstddef>
+
 #define IPAType size_t
 
 typedef struct _Inplace_Allocator

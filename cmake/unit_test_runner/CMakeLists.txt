@@ -1,16 +1,13 @@
 cmake_minimum_required(VERSION 2.8)
 
 #get boost
-include( ${COMMON_ROOT_DIR}/cmake/boost_include.cmake )
+include( ${WORKSPACE}/root/thirdparty/boost/boost_include.cmake )
 
 #get gtest
-include( ${COMMON_ROOT_DIR}/cmake/gtest_include.cmake )
-
-#get the unit test utils
-#include( ${COMMON_ROOT_DIR}/cmake/test_utils_include.cmake )
+include( ${WORKSPACE}/root/thirdparty/gtest/gtest_include.cmake )
 
 #get common
-include( ${COMMON_ROOT_DIR}/cmake/common_include.cmake )
+include( ${WORKSPACE}/root/src/common/common_include.cmake )
 
 set( COMMON_TEST_DIR ${COMMON_ROOT_DIR}/tests )
 
@@ -40,3 +37,4 @@ link_gtest( common_tests )
 link_common( common_tests )
 
 install( TARGETS common_tests DESTINATION bin)
+

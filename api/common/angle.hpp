@@ -50,6 +50,7 @@ struct Angle< 8 >
     };
 };
 
+
 template<>
 struct Angle< 16 >
 {

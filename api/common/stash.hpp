@@ -6,6 +6,8 @@
 
 #include "boost/filesystem/path.hpp"
 
+#include <memory>
+
 namespace task
 {
 
