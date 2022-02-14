@@ -20,12 +20,12 @@ void on_terminate()
     std::abort();
 }
 
-int main(int argc, char* argv[])
+int inner_main(int argc, char* argv[])
 {
     std::set_terminate( on_terminate );
-    
+
     Common::disableDebugErrorPrompts();
-    
+
     std::string strFilter, strXSL;
     int iRepeats = 1;
     bool bWait = false, bDebug = false, bReport = false, bCOut = false, bBreak = false;
@@ -35,6 +35,7 @@ int main(int argc, char* argv[])
     desc.add_options()
         ("help", "produce help message")
         ("filter",      bpo::value< std::string >( &strFilter ), "filter string to select subset of tests")
+        ("gtest_filter",bpo::value< std::string >( &strFilter ), "filter string to select subset of tests")
         ("xsl",         bpo::value< std::string >( &strXSL ),    "xsl file to generate html report")
         ("repeats",     bpo::value< int >( &iRepeats ),          "number of times to repeat tests")
         ("report",      bpo::value< bool >( &bReport )->implicit_value( true ),          "generate xml report")
@@ -59,16 +60,16 @@ int main(int argc, char* argv[])
         std::cin >> c;
     }
 
+    std::size_t szResult = 0U;
+
     iRepeats = std::max< int >( 1, iRepeats );
 
     std::unique_ptr< EDUTS::UnitTestResultWrapper > results;
     try
     {
         EDUTS::UnitTestWrapper test( EDUTS::UnitTestOptions( bDebug, bReport, iRepeats, strFilter.c_str(), strXSL.c_str() ) );
-        const bool bSuccess = test.run();
-        {
-            results = test.getResult();
-        }
+        szResult = test.run();
+        results = test.getResult();
     }
     catch( std::runtime_error& e )
     {
@@ -78,7 +79,7 @@ int main(int argc, char* argv[])
     {
         std::cout << "Encountered unknown exception" << std::endl;
     }
-    
+
     //wait for UnitTestWrapper to restore standard output before we print
     if( bCOut && results.get() )
     {
@@ -102,6 +103,23 @@ int main(int argc, char* argv[])
         std::cin >> cWait;
     }
 
-	return 0;
+	return szResult;
 }
 
+int main(int argc, char* argv[])
+{
+    try
+    {
+        return inner_main( argc, argv );
+    }
+    catch( std::exception& ex )
+    {
+        std::cerr << "Exception calling main: " << ex.what() << std::endl;
+        return 1;
+    }
+    catch( ... )
+    {
+        std::cerr << "Unknown exception calling main" << std::endl;
+        return 1;
+    }
+}

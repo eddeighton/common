@@ -140,7 +140,7 @@ inline int eds_isalnum( int ch )
 inline std::string style_replace_non_alpha_numeric( const std::string& str, char r )
 {
     std::string strResult;
-    std::replace_copy_if( str.begin(), str.end(), std::back_inserter( strResult ), 
+    std::replace_copy_if( str.begin(), str.end(), std::back_inserter( strResult ),
         []( const char c ){ return !eds_isalnum( c ); }, r );
     return strResult;
 }
@@ -154,8 +154,8 @@ inline std::string style_date_nice()
 inline std::string style_date()
 {
     return  style_replace_non_alpha_numeric(
-                boost::to_upper_copy( 
-                    style_date_nice() ), 
+                boost::to_upper_copy(
+                    style_date_nice() ),
                 '_' );
 }
 
@@ -199,7 +199,7 @@ public:
         :   m_pCoutBuffer( std::cout.rdbuf() ),
             m_pCerrBuffer( std::cerr.rdbuf() ),
             m_options( options ),
-            m_iResult( -1 )
+            m_iResult( 0 )
     {
         //install crt hook to stop CrtDbgReportHook from code ASSERTs
         g_bDebugAsserts = m_options.bDebug;
@@ -223,7 +223,7 @@ public:
         std::cerr.rdbuf( m_pCerrBuffer );
     }
 
-    bool run()
+    std::size_t run()
     {
         initGoogleTestOptions( m_options );
 
@@ -233,7 +233,7 @@ public:
 
         m_iResult = RUN_ALL_TESTS();
 
-        return ( m_iResult == 0 ) ? true : false;
+        return m_iResult;
     }
 
     std::unique_ptr< UnitTestResultWrapper > getResult()
@@ -271,12 +271,12 @@ private:
         //boost::mt19937 ran;
         //boost::uuids::random_generator gen;
         //const boost::uuids::uuid u = gen();
-		
+
 		const std::string strTime = style_date();
 
         {
             std::ostringstream os;
-			
+
             os << "results/" << "result_" << strTime << ".xml";
             m_strFileName = os.str();
         }
@@ -304,7 +304,7 @@ private:
         ::testing::GTEST_FLAG(repeat)                       = m_options.iRepeats;
         if( !m_options.strFilter.empty() )
             ::testing::GTEST_FLAG(filter)                   = m_options.strFilter.c_str();
-			
+
     }
 
 private:
@@ -312,7 +312,7 @@ private:
     std::ostringstream m_coutStream, m_cerrStream;
     std::string m_strFileName, m_htmlFileName;
     const UnitTestOptions m_options;
-    int m_iResult;
+    std::size_t m_iResult;
 
 };
 

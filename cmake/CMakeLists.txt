@@ -3,6 +3,9 @@ cmake_minimum_required( VERSION 3.1...3.16 )
 
 project( common )
 
+#enable ctest
+enable_testing()
+
 #insist on ALL projects using c++ 17
 set( CMAKE_CXX_STANDARD 17 )
 

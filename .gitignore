@@ -18,5 +18,5 @@ third_party
 *_build/
 *.ilk
 *.pdb
-
+*.swp
 imgui.ini

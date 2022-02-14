@@ -22,6 +22,9 @@ set( COMMON_UNIT_TESTS
 	 ${COMMON_TEST_DIR}/tuple_tests.cpp
 	 ${COMMON_TEST_DIR}/scheduler_tests.cpp )
 
+enable_testing()
+#gtest_discover_tests(common_tests)
+
 add_executable( common_tests ${COMMON_UNIT_TESTS} ${COMMON_TEST_DIR}/main_test_runner.cpp )
 
 ##configure all debug builds to have 'd' postfix
@@ -36,5 +39,9 @@ link_boost( common_tests iostreams )
 link_gtest( common_tests )
 link_common( common_tests )
 
+gtest_add_tests( TARGET common_tests)
+
 install( TARGETS common_tests DESTINATION bin)
+
+add_custom_command( TARGET common_tests POST_BUILD COMMAND ctest --output-on-failure )
 
