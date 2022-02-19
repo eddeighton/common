@@ -226,8 +226,9 @@ public:
     std::size_t run()
     {
         initGoogleTestOptions( m_options );
-
-        char* pszStrings[] = { "test.exe" };
+        
+        char sz[] = "test.exe";
+        char* pszStrings[1] = { &sz[0] };
         int iTotalCmdArgs = 1;
         testing::InitGoogleTest( &iTotalCmdArgs, &pszStrings[0] );
 

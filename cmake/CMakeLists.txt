@@ -1,5 +1,4 @@
-
-cmake_minimum_required( VERSION 3.1...3.16 )
+cmake_minimum_required(VERSION 3.2)
 
 project( common )
 
@@ -23,7 +22,7 @@ ENDIF( ${WIN32} )
 
 #setup some common directories from the root of the project
 set( CMAKE_PARENT_PATH ${CMAKE_CURRENT_LIST_DIR}/.. )
-find_path( COMMON_ROOT_DIR NAMES api PATHS ${CMAKE_PARENT_PATH} )
+find_path( COMMON_ROOT_DIR NAMES api PATHS ${CMAKE_PARENT_PATH} REQUIRED )
 set( COMMON_API_DIR ${COMMON_ROOT_DIR}/api )
 set( COMMON_SRC_DIR ${COMMON_ROOT_DIR}/src )
 

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.2)
 
 #get boost
 include( ${WORKSPACE}/root/thirdparty/boost/boost_include.cmake )
@@ -20,14 +20,12 @@ add_library( Common::commonlib ALIAS commonlib )
 
 target_include_directories( commonlib PUBLIC ${COMMON_ROOT_DIR}/api )
 
-set_target_properties( commonlib PROPERTIES DEBUG_POSTFIX d )
 set_target_properties( commonlib PROPERTIES FOLDER common )
 
 link_boost( commonlib filesystem )
 link_boost( commonlib system )
 link_boost( commonlib timer )
 link_boost( commonlib iostreams )
-#link_boost( commonlib functional)
 
 set( InstalledHeaders ${COMMON_INCLUDE_HEADERS} )
 

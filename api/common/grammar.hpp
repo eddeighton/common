@@ -9,8 +9,8 @@ Copyright Deighton Systems Limited (c) 2015
 
 #include <boost/spirit/include/qi.hpp>
 
-#include <boost/spirit/include/phoenix_core.hpp>
-#include <boost/spirit/include/phoenix_stl.hpp>
+#include <boost/phoenix/core.hpp>
+#include <boost/phoenix/stl.hpp>
 #include <boost/spirit/home/support/iterators/line_pos_iterator.hpp>
 #include <boost/spirit/include/support_line_pos_iterator.hpp>
 

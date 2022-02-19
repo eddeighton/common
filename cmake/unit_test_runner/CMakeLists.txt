@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.2)
 
 #get boost
 include( ${WORKSPACE}/root/thirdparty/boost/boost_include.cmake )
@@ -27,8 +27,6 @@ enable_testing()
 
 add_executable( common_tests ${COMMON_UNIT_TESTS} ${COMMON_TEST_DIR}/main_test_runner.cpp )
 
-##configure all debug builds to have 'd' postfix
-set_target_properties( common_tests PROPERTIES DEBUG_POSTFIX d )
 set_target_properties( common_tests PROPERTIES FOLDER common )
 
 link_boost( common_tests filesystem )
@@ -36,7 +34,6 @@ link_boost( common_tests system )
 link_boost( common_tests date_time )
 link_boost( common_tests program_options )
 link_boost( common_tests iostreams )
-#link_boost( common_tests functional)
 link_boost( common_tests atomic )
 link_gtest( common_tests )
 link_common( common_tests )
