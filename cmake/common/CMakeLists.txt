@@ -15,7 +15,7 @@ set( COMMON_SOURCES ${COMMON_INCLUDE_HEADERS} ${COMMON_SOURCE_HEADERS} ${COMMON_
 
 source_group( src FILES ${COMMON_SOURCES} )
 
-add_library( commonlib STATIC ${COMMON_SOURCES} )
+add_library( commonlib ${CFG_LINK} ${COMMON_SOURCES} )
 add_library( Common::commonlib ALIAS commonlib )
 
 target_include_directories( commonlib PUBLIC ${COMMON_ROOT_DIR}/api )
@@ -27,6 +27,7 @@ link_boost( commonlib filesystem )
 link_boost( commonlib system )
 link_boost( commonlib timer )
 link_boost( commonlib iostreams )
+#link_boost( commonlib functional)
 
 set( InstalledHeaders ${COMMON_INCLUDE_HEADERS} )
 

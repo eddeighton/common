@@ -4,6 +4,7 @@
 
 #include "boost/filesystem.hpp"
 #include "boost/iostreams/device/mapped_file.hpp"
+#include <boost/functional/hash.hpp>
 
 namespace common
 {
