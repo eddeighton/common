@@ -36,6 +36,7 @@ link_boost( common_tests system )
 link_boost( common_tests date_time )
 link_boost( common_tests program_options )
 link_boost( common_tests iostreams )
+link_boost( common_tests atomic )
 link_gtest( common_tests )
 link_common( common_tests )
 
