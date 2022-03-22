@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.2)
 
 #get boost
-include( ${WORKSPACE}/root/thirdparty/boost/boost_include.cmake )
+include( ${WORKSPACE_ROOT_PATH}/thirdparty/boost/boost_include.cmake )
 
 #get gtest
-include( ${WORKSPACE}/root/thirdparty/gtest/gtest_include.cmake )
+include( ${WORKSPACE_ROOT_PATH}/thirdparty/gtest/gtest_include.cmake )
 
 #get common
-include( ${WORKSPACE}/root/src/common/common_include.cmake )
+include( ${WORKSPACE_ROOT_PATH}/src/common/common_include.cmake )
 
 set( COMMON_TEST_DIR ${COMMON_ROOT_DIR}/tests )
 

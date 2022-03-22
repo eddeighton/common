@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.2)
 
 #get boost
-include( ${WORKSPACE}/root/thirdparty/boost/boost_include.cmake )
+include( ${WORKSPACE_ROOT_PATH}/thirdparty/boost/boost_include.cmake )
 
 #get the headers
 set( COMMON_API_DIR ${COMMON_ROOT_DIR}/api/common )
