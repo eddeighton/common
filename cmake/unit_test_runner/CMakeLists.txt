@@ -6,9 +6,6 @@ include( ${WORKSPACE_ROOT_PATH}/thirdparty/boost/boost_include.cmake )
 #get gtest
 include( ${WORKSPACE_ROOT_PATH}/thirdparty/gtest/gtest_include.cmake )
 
-#get common
-include( ${WORKSPACE_ROOT_PATH}/src/common/common_include.cmake )
-
 set( COMMON_TEST_DIR ${COMMON_ROOT_DIR}/tests )
 
 set( COMMON_UNIT_TESTS
@@ -23,7 +20,6 @@ set( COMMON_UNIT_TESTS
 	 ${COMMON_TEST_DIR}/scheduler_tests.cpp )
 
 enable_testing()
-#gtest_discover_tests(common_tests)
 
 add_executable( common_tests ${COMMON_UNIT_TESTS} ${COMMON_TEST_DIR}/main_test_runner.cpp )
 
@@ -36,7 +32,8 @@ link_boost( common_tests program_options )
 link_boost( common_tests iostreams )
 link_boost( common_tests atomic )
 link_gtest( common_tests )
-link_common( common_tests )
+
+target_link_libraries(common_tests commonlib)
 
 gtest_add_tests( TARGET common_tests)
 

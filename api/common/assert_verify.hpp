@@ -34,6 +34,13 @@ Copyright Deighton Systems Limited (c) 2015
 #include "backtrace.hpp"
 
 #ifdef _DEBUG
+
+#ifndef _CRT_ASSERT
+#define _CRT_ASSERT 0
+#endif
+#ifndef _CRT_ERROR
+#define _CRT_ERROR 0
+#endif
     
 #define DEBUG_BREAK( type, msg ) \
     DO_STUFF_AND_REQUIRE_SEMI_COLON( \
