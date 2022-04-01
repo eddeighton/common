@@ -22,10 +22,11 @@
 Copyright Deighton Systems Limited (c) 2016
 */
 
-//#include <boost/stacktrace.hpp>
 
 #include "common/backtrace.hpp"
 #include "common/assert_verify.hpp"
+
+#include <boost/stacktrace.hpp>
 
 #ifdef _DEBUG
 
@@ -177,7 +178,7 @@ namespace Common
     
     void getBackTrace( std::ostream& os )
     {
-        //os << boost::stacktrace::stacktrace();
+        os << boost::stacktrace::stacktrace();
     }
 
     void debug_break()

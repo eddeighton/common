@@ -7,7 +7,9 @@ Copyright Deighton Systems Limited (c) 2016
 #include "common/assert_verify.hpp"
 
 #include <boost/iostreams/device/mapped_file.hpp>
+#include <boost/iostreams/device/mapped_file.hpp>
 
+#include <exception>
 #include <list>
 #include <fstream>
 #include <algorithm>
@@ -189,7 +191,6 @@ std::unique_ptr< boost::filesystem::ifstream > createBinaryInputFileStream( cons
     {
         THROW_RTE( "Failed to load file: " << filePath.string() );
     }
-
     return pFileStream;
 }
 

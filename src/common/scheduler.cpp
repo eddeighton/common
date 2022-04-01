@@ -413,7 +413,7 @@ namespace task
             }
             catch( std::exception& ex )
             {
-                os << common::COLOUR_RED_BEGIN << "Error: " << ex.what() << common::COLOUR_END << std::endl;
+                os << "Error: " << ex.what() << std::endl;
             }
         }
         
