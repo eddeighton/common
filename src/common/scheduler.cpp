@@ -379,7 +379,7 @@ namespace task
                                 //os << status.m_strTaskName << " started" << std::endl;
                                 break;
                             case task::Status::eCached    :
-                                //os << status.m_strTaskName << " cached" << std::endl;
+                                os << status << std::endl;
                                 break;
                             case task::Status::eSucceeded :
                                 os << status << std::endl;

@@ -35,11 +35,11 @@ std::ostream& operator<<( std::ostream& os, const Status& status )
 {
     switch( status.m_state )
     {                                                                                             
-        case Status::ePending   : os << common::COLOUR_WHITE_BEGIN  << "PENDING   ";      break;
-        case Status::eStarted   : os << common::COLOUR_WHITE_BEGIN  << "STARTED   ";      break;
-        case Status::eCached    : os << common::COLOUR_WHITE_BEGIN  << "CACHED    ";      break;
-        case Status::eSucceeded : os << common::COLOUR_GREEN_BEGIN  << "SUCCEEDED ";      break;
-        case Status::eFailed    : os << common::COLOUR_RED_BEGIN    << "FAILED    ";      break;
+        case Status::ePending   : os << common::COLOUR_WHITE_BEGIN  << "PENDING   " ;      break;
+        case Status::eStarted   : os << common::COLOUR_WHITE_BEGIN  << "STARTED   " ;      break;
+        case Status::eCached    : os << common::COLOUR_BLUE_BEGIN   << "CACHED    " ;      break;
+        case Status::eSucceeded : os << common::COLOUR_GREEN_BEGIN  << "SUCCEEDED " ;      break;
+        case Status::eFailed    : os << common::COLOUR_RED_BEGIN    << "FAILED    " ;      break;
         default:
             THROW_RTE( "Unknown task state" );
     }

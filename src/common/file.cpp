@@ -137,7 +137,10 @@ void ensureFoldersExist( const boost::filesystem::path& filePath )
     boost::filesystem::path parentPath = filePath.parent_path();
     if( !parentPath.empty() && !exists( parentPath ) && !create_directories( parentPath ) )
     {
-        THROW_RTE( "Failed to create directories for: " << filePath.string() );
+        if( !exists( parentPath ) )
+        {
+            THROW_RTE( "Failed to create directories for: " << filePath.string() );
+        }
     }
 }
 
