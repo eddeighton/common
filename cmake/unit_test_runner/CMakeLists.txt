@@ -18,7 +18,8 @@ set( COMMON_UNIT_TESTS
 	 ${COMMON_TEST_DIR}/rounding_tests.cpp
 	 ${COMMON_TEST_DIR}/tuple_tests.cpp
 	 ${COMMON_TEST_DIR}/scheduler_tests.cpp
-	 ${COMMON_TEST_DIR}/escape_tests.cpp )
+	 ${COMMON_TEST_DIR}/escape_tests.cpp
+	 ${COMMON_TEST_DIR}/stash_tests.cpp )
 
 enable_testing()
 

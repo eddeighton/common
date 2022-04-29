@@ -22,17 +22,17 @@ namespace task
     {
         const boost::filesystem::path m_stashDirectory;
 
-        struct FileHash
+        struct FileDeterminant
         {
             boost::filesystem::path file;
-            common::HashCode        code;
-            inline bool             operator<( const FileHash& hash ) const
+            DeterminantHash         determinant;
+            inline bool             operator<( const FileDeterminant& hash ) const
             {
-                return ( file != hash.file ) ? ( file < hash.file ) : ( code != hash.code ) ? ( code < hash.code ) : false;
+                return ( file != hash.file ) ? ( file < hash.file ) : ( determinant != hash.determinant ) ? ( determinant < hash.determinant ) : false;
             }
         };
-        using Manifest    = std::map< FileHash, boost::filesystem::path >;
-        using HashCodeMap = std::map< boost::filesystem::path, common::HashCode >;
+        using Manifest    = std::map< FileDeterminant, boost::filesystem::path >;
+        using HashCodeMap = std::map< boost::filesystem::path, FileHash >;
 
         // mutable std::mutex m_mutex;
         using MutexLock = boost::interprocess::scoped_lock< boost::interprocess::named_mutex >;
@@ -52,12 +52,12 @@ namespace task
                 Tokeniser                     tokens( strLine, sep );
                 for ( Tokeniser::iterator i = tokens.begin(); i != tokens.end(); ++i )
                 {
-                    FileHash fileHash;
+                    FileDeterminant fileHash;
                     fileHash.file = *i;
 
                     if ( ++i == tokens.end() )
                         THROW_RTE( "Error in stash manifest" );
-                    fileHash.code = boost::lexical_cast< common::HashCode >( *i );
+                    fileHash.determinant = boost::lexical_cast< common::Hash >( *i );
 
                     if ( ++i == tokens.end() )
                         THROW_RTE( "Error in stash manifest" );
@@ -71,7 +71,7 @@ namespace task
         {
             for ( Manifest::const_iterator i = input.begin(), iEnd = input.end(); i != iEnd; ++i )
             {
-                outStream << i->first.file.string() << ',' << i->first.code << ',' << i->second.string() << '\n';
+                outStream << i->first.file.string() << ',' << i->first.determinant << ',' << i->second.string() << '\n';
             }
         }
 
@@ -85,12 +85,12 @@ namespace task
                 Tokeniser                     tokens( strLine, sep );
                 for ( Tokeniser::iterator i = tokens.begin(); i != tokens.end(); ++i )
                 {
-                    std::pair< boost::filesystem::path, common::HashCode > input;
+                    std::pair< boost::filesystem::path, FileHash > input;
                     input.first = *i;
 
                     if ( ++i == tokens.end() )
                         THROW_RTE( "Error in HashCodeMap file" );
-                    input.second = boost::lexical_cast< common::HashCode >( *i );
+                    input.second = boost::lexical_cast< FileHash >( *i );
 
                     output.insert( input );
                 }
@@ -133,7 +133,7 @@ namespace task
             }
         }
 
-        common::HashCode getBuildHashCode( const boost::filesystem::path& key ) const
+        FileHash getBuildHashCode( const boost::filesystem::path& key ) const
         {
             MutexLock lock( m_mutex );
 
@@ -142,7 +142,7 @@ namespace task
             return iFind->second;
         }
 
-        void setBuildHashCode( const boost::filesystem::path& key, common::HashCode hashCode )
+        void setBuildHashCode( const boost::filesystem::path& key, FileHash hashCode )
         {
             MutexLock lock( m_mutex );
 
@@ -175,7 +175,7 @@ namespace task
             save( m_buildHashCodes, *pFileStream );
         }
 
-        void stash( const boost::filesystem::path& file, const common::HashCode& code )
+        void stash( const boost::filesystem::path& file, DeterminantHash determinant )
         {
             MutexLock lock( m_mutex );
 
@@ -193,16 +193,16 @@ namespace task
             }
             boost::filesystem::copy( file, stashFile );
 
-            m_manifest[ FileHash{ file, code } ] = stashFile;
+            m_manifest[ FileDeterminant{ file, determinant } ] = stashFile;
 
             saveManifest();
         }
 
-        bool restore( const boost::filesystem::path& file, const common::HashCode& code )
+        bool restore( const boost::filesystem::path& file, DeterminantHash determinant )
         {
             MutexLock lock( m_mutex );
 
-            Manifest::const_iterator iFind = m_manifest.find( FileHash{ file, code } );
+            Manifest::const_iterator iFind = m_manifest.find( FileDeterminant{ file, determinant } );
             if ( iFind != m_manifest.end() )
             {
                 boost::filesystem::path stashFile = iFind->second;
@@ -214,7 +214,7 @@ namespace task
                         boost::filesystem::remove( file );
                     }
                     ensureFoldersExist( file );
-                    // recheck the hash code??
+                    // recheck the hash determinant??
                     boost::filesystem::copy( stashFile, file );
                     return true;
                 }
@@ -228,9 +228,9 @@ namespace task
     {
     }
 
-    common::HashCode Stash::getBuildHashCode( const boost::filesystem::path& key ) const { return m_pPimpl->getBuildHashCode( key ); }
+    FileHash Stash::getBuildHashCode( const boost::filesystem::path& key ) const { return m_pPimpl->getBuildHashCode( key ); }
 
-    void Stash::setBuildHashCode( const boost::filesystem::path& key, common::HashCode hashCode )
+    void Stash::setBuildHashCode( const boost::filesystem::path& key, FileHash hashCode )
     {
         m_pPimpl->setBuildHashCode( key, hashCode );
     }
@@ -239,8 +239,8 @@ namespace task
 
     void Stash::saveBuildHashCodes( const boost::filesystem::path& file ) const { m_pPimpl->saveBuildHashCodes( file ); }
 
-    void Stash::stash( const boost::filesystem::path& file, const common::HashCode& code ) { m_pPimpl->stash( file, code ); }
+    void Stash::stash( const boost::filesystem::path& file, const DeterminantHash determinant ) { m_pPimpl->stash( file, determinant ); }
 
-    bool Stash::restore( const boost::filesystem::path& file, const common::HashCode& code ) { return m_pPimpl->restore( file, code ); }
+    bool Stash::restore( const boost::filesystem::path& file, const DeterminantHash determinant ) { return m_pPimpl->restore( file, determinant ); }
 
 } // namespace task
