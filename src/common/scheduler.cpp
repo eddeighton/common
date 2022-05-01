@@ -414,6 +414,9 @@ namespace task
             catch( std::exception& ex )
             {
                 os << "Error: " << ex.what() << std::endl;
+                bContinue = false;
+                logger.join();
+                throw ex;
             }
         }
         
