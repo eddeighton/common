@@ -21,7 +21,7 @@ add_library( Common::commonlib ALIAS commonlib )
 target_include_directories( commonlib PUBLIC ${COMMON_ROOT_DIR}/api )
 
 set_target_properties( commonlib PROPERTIES FOLDER common )
-set_property(TARGET commonlib PROPERTY POSITION_INDEPENDENT_CODE ON)
+#set_property(TARGET commonlib PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 link_boost( commonlib filesystem )
 link_boost( commonlib system )

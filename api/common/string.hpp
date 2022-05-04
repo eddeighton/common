@@ -25,6 +25,8 @@ namespace common
         }
     }
 
+    std::string uuid();
+    std::string date();
 }
 
 #endif //STRING_UTILS_6_AUGUST_2015
