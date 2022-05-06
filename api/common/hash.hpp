@@ -8,6 +8,7 @@
 #include <vector>
 #include <iostream>
 #include <functional>
+#include <type_traits>
 
 namespace common
 {
@@ -15,6 +16,10 @@ namespace common
 
     namespace internal
     {
+        struct HashCode
+        {
+            HashCodeType m_data = HashCodeType();
+        };
         struct HashCombiner
         {
             inline HashCodeType operator()( HashCodeType left, HashCodeType right ) const
@@ -23,10 +28,16 @@ namespace common
             }
         };
 
-        template < typename T >
+        template < typename T, class Enable = void >
         struct HashFunctor
         {
             inline HashCodeType operator()( const T& value ) const { return std::hash< T >{}( value ); }
+        };
+        
+        template < typename T > 
+        struct HashFunctor< T, typename std::enable_if< std::is_base_of< HashCode, T >::value >::type >
+        {
+            inline HashCodeType operator()( const T& value ) const { return value.m_data; }
         };
 
         HashCodeType hash_file( const boost::filesystem::path& file );
@@ -45,7 +56,7 @@ namespace common
                 HashCodeType hashCode = 0x79e37b99;
                 for ( std::size_t sz = 0U; sz != Length; ++sz )
                 {
-                    hashCode = HashCombiner()( hashCode, HashFunctor< char >()( str[ sz ] ) );
+                    hashCode = HashCombiner()( hashCode, std::hash< char >{}( str[ sz ] ) );
                 }
                 return hashCode;
             }
@@ -95,26 +106,25 @@ namespace common
         };
     } // namespace internal
 
-    class Hash
+    class Hash : public internal::HashCode
     {
     public:
         Hash()
-            : m_data( 0U )
         {
         }
 
         template < typename... Args >
         Hash( const Args&... args )
-            : m_data( internal::HashFunctorVariadic()( args... ) )
+            : internal::HashCode( { internal::HashFunctorVariadic()( args... ) } )
         {
         }
+
+        HashCodeType get() const { return m_data; }
+        void set( HashCodeType hash ) { m_data = hash; }
 
         inline bool operator==( const Hash& cmp ) const { return m_data == cmp.m_data; }
         inline bool operator!=( const Hash& cmp ) const { return m_data != cmp.m_data; }
         inline bool operator<( const Hash& cmp ) const { return m_data < cmp.m_data; }
-
-        inline HashCodeType get() const { return m_data; }
-        void                set( HashCodeType hash ) { m_data = hash; }
 
         template < class Archive >
         inline void serialize( Archive& archive, const unsigned int version )
@@ -129,9 +139,6 @@ namespace common
         {
             m_data = internal::HashCombiner()( m_data, internal::HashFunctorVariadic()( args... ) );
         }
-
-    protected:
-        HashCodeType m_data;
     };
 
 } // namespace common

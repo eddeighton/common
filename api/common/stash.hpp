@@ -43,6 +43,7 @@ namespace task
 
         inline void operator^=( const Hash& code ) { m_data = common::internal::HashCombiner()( m_data, code.get() ); }
         inline void operator^=( const FileHash& fileHash ) { m_data = common::internal::HashCombiner()( m_data, fileHash.get() ); }
+        inline void operator^=( const DeterminantHash& determinantHash ) { m_data = common::internal::HashCombiner()( m_data, determinantHash.get() ); }
         template < typename... Args >
         inline void operator^=( Args const&... args )
         {
