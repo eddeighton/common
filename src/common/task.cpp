@@ -107,7 +107,6 @@ void Progress::start( const std::string& strTaskName, Status::Subject source, St
     m_status.m_source       = source;
     m_status.m_target       = target;
     m_status.m_elapsed      = getElapsedTime();
-    m_fifo.push( m_status );
 }
 
 void Progress::setState( Status::State state )
@@ -123,12 +122,11 @@ void Progress::setState( Status::State state )
         case Status::eFailed    :
             m_status.m_elapsed = getElapsedTime();
             m_timer.stop();
+            //m_fifo.push( m_status );
             break;
         default:
             THROW_RTE( "Unknown task state" );
     }
-    
-    m_fifo.push( m_status );
 }
 
 void Progress::cached()
@@ -148,7 +146,6 @@ void Progress::msg( const std::string& strMsg )
 {
     m_status.m_elapsed = getElapsedTime();
     m_status.m_msgs.push_back( strMsg );
-    m_fifo.push( m_status );
 }
 
 std::string Progress::getElapsedTime() const

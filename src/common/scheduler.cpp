@@ -361,14 +361,14 @@ namespace task
     {
         task::StatusFIFO fifo;
         std::atomic< bool > bContinue = true;
-        
+        /*
         std::thread logger
         (
             [ & ]()
             {
-                while( bContinue )
+                while( bContinue || !fifo.empty() )
                 {
-                    while( !fifo.empty() )
+                    if( !fifo.empty() )
                     {
                         const Status status = fifo.pop();
                         switch( status.m_state )
@@ -392,15 +392,15 @@ namespace task
                         }
                     }
                     using namespace std::chrono_literals;
-                    std::this_thread::sleep_for( 1ms );
+                    std::this_thread::sleep_for( 10ms );
                 }
             }
-        );
+        );*/
     
         {
             Scheduler scheduler( fifo, 
                 Scheduler::getDefaultAliveRate(), 
-                std::optional< unsigned int >() );
+                std::thread::hardware_concurrency() - 1 );
             
             int owner;
             
@@ -415,12 +415,12 @@ namespace task
             {
                 os << "Error: " << ex.what() << std::endl;
                 bContinue = false;
-                logger.join();
+                //logger.join();
                 throw ex;
             }
         }
         
         bContinue = false;
-        logger.join();
+        //logger.join();
     }
 }
