@@ -361,42 +361,7 @@ namespace task
     {
         task::StatusFIFO fifo;
         std::atomic< bool > bContinue = true;
-        /*
-        std::thread logger
-        (
-            [ & ]()
-            {
-                while( bContinue || !fifo.empty() )
-                {
-                    if( !fifo.empty() )
-                    {
-                        const Status status = fifo.pop();
-                        switch( status.m_state )
-                        {
-                            case task::Status::ePending   :
-                                THROW_RTE( "Pending task status reported" );
-                            case task::Status::eStarted   :
-                                //os << status.m_strTaskName << " started" << std::endl;
-                                break;
-                            case task::Status::eCached    :
-                                os << status << std::endl;
-                                break;
-                            case task::Status::eSucceeded :
-                                os << status << std::endl;
-                                break;
-                            case task::Status::eFailed    :
-                                os << status << std::endl;
-                                break;
-                            default:
-                                THROW_RTE( "Unknown task status type" );
-                        }
-                    }
-                    using namespace std::chrono_literals;
-                    std::this_thread::sleep_for( 10ms );
-                }
-            }
-        );*/
-    
+        
         {
             Scheduler scheduler( fifo, 
                 Scheduler::getDefaultAliveRate(), 
@@ -413,14 +378,11 @@ namespace task
             }
             catch( std::exception& ex )
             {
-                os << "Error: " << ex.what() << std::endl;
                 bContinue = false;
-                //logger.join();
-                throw ex;
+                throw;
             }
         }
         
         bContinue = false;
-        //logger.join();
     }
 }

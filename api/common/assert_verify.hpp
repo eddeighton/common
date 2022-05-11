@@ -43,19 +43,26 @@ Copyright Deighton Systems Limited (c) 2015
 #define _CRT_ERROR 0
 #endif
 
-#define DEBUG_BREAK( type, msg ) DO_NOTHING_BUT_REQUIRE_SEMI_COLON          
+#define DEBUG_BREAK( type, msg ) DO_NOTHING_BUT_REQUIRE_SEMI_COLON
 //#define DEBUG_BREAK( type, msg )                                                                                    \
 //    DO_STUFF_AND_REQUIRE_SEMI_COLON( std::ostringstream _os_x; Common::getBackTrace( _os_x ); _os_x << msg << "\n"; \
 //                                     Common::msvcr_debugAssert( type, __FILE__, __LINE__, BOOST_CURRENT_FUNCTION, _os_x.str().c_str() ); )
 
-
-#define THROW( exceptionType, msg )                                                                                                     \
-    DO_STUFF_AND_REQUIRE_SEMI_COLON( DEBUG_BREAK( _CRT_ERROR, msg ); std::ostringstream _os2; Common::getBackTrace( _os2 );             \
-                                     _os2 << common::COLOUR_RED_BEGIN << "FILE " << __FILE__ << " LINE:" << __LINE__ << "\nMSG:" << msg \
-                                          << common::COLOUR_END;                                                                        \
+#define THROW_BACKTRACE( exceptionType, msg )                                                                        \
+    DO_STUFF_AND_REQUIRE_SEMI_COLON( DEBUG_BREAK( _CRT_ERROR, msg ); std::ostringstream _os2;                        \
+                                     Common::getBackTrace( _os2 );                                                   \
+                                     _os2 << common::COLOUR_RED_BEGIN << "FILE " << __FILE__ << " LINE:" << __LINE__ \
+                                          << "\nMSG:" << msg << common::COLOUR_END;                                  \
                                      throw exceptionType( _os2.str() ); )
 
-#define ASSERT_MSG( expr, msg ) DO_STUFF_AND_REQUIRE_SEMI_COLON( if ( !( expr ) ) { THROW( std::runtime_error, #expr << "\n\n" << msg ); } )
+#define THROW( exceptionType, msg )                                                                                  \
+    DO_STUFF_AND_REQUIRE_SEMI_COLON( DEBUG_BREAK( _CRT_ERROR, msg ); std::ostringstream _os2;                        \
+                                     _os2 << common::COLOUR_RED_BEGIN << "FILE " << __FILE__ << " LINE:" << __LINE__ \
+                                          << "\nMSG:" << msg << common::COLOUR_END;                                  \
+                                     throw exceptionType( _os2.str() ); )
+
+#define ASSERT_MSG( expr, msg ) \
+    DO_STUFF_AND_REQUIRE_SEMI_COLON( if ( !( expr ) ) { THROW( std::runtime_error, #expr << "\n\n" << msg ); } )
 
 #define ASSERT( expr ) ASSERT_MSG( expr, "" )
 
@@ -70,17 +77,19 @@ Copyright Deighton Systems Limited (c) 2015
 #define ASSERT_MSG( expr, msg ) DO_NOTHING_BUT_REQUIRE_SEMI_COLON
 #define ASSERT( expr ) DO_NOTHING_BUT_REQUIRE_SEMI_COLON
 
-#define THROW( exceptionType, msg )                                                                                          \
-    DO_STUFF_AND_REQUIRE_SEMI_COLON( std::ostringstream _os; Common::getBackTrace( _os );                                    \
-                                     _os << common::COLOUR_RED_BEGIN << "FILE " << __FILE__ << " LINE:" << __LINE__          \
-                                         << " FUNCTION:" << BOOST_CURRENT_FUNCTION << "\nMSG:" << msg << common::COLOUR_END; \
+#define THROW( exceptionType, msg )                                                                                 \
+    DO_STUFF_AND_REQUIRE_SEMI_COLON( std::ostringstream _os; Common::getBackTrace( _os );                           \
+                                     _os << common::COLOUR_RED_BEGIN << "FILE " << __FILE__ << " LINE:" << __LINE__ \
+                                         << " FUNCTION:" << BOOST_CURRENT_FUNCTION << "\nMSG:" << msg               \
+                                         << common::COLOUR_END;                                                     \
                                      throw exceptionType( _os.str() ); )
 
-#define TERMINATE_IF_NOT( expression, msg ) DO_STUFF_AND_REQUIRE_SEMI_COLON( if ( !( expression ) ) { std::terminate(); } )
+#define TERMINATE_IF_NOT( expression, msg ) \
+    DO_STUFF_AND_REQUIRE_SEMI_COLON( if ( !( expression ) ) { std::terminate(); } )
 
 #endif //_DEBUG
 
-#define THROW_RTE( msg ) THROW( std::runtime_error, "THROW_RTE: " << msg )
+#define THROW_RTE( msg ) THROW( std::runtime_error, msg )
 
 #define VERIFY( expression, exceptionType, msg )                                     \
     DO_STUFF_AND_REQUIRE_SEMI_COLON( if ( !( expression ) ) {                        \
