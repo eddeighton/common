@@ -142,8 +142,9 @@ public:
 
     inline void toHexString( std::ostream& os ) const
     {
-        os << std::setfill( '0' ) << std::setw( sizeof( m_data ) * 2 ) << std::hex << m_data;
+        os << "0x" << std::setfill( '0' ) << std::setw( sizeof( m_data ) * 2 ) << std::hex << m_data;
     }
+
     inline std::string toHexString() const
     {
         std::ostringstream os;
