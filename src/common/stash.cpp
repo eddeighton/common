@@ -199,15 +199,20 @@ struct Stash::Pimpl
         const boost::filesystem::path manifestFile = m_stashDirectory / pszManifestFileName;
         boost::filesystem::ensureFoldersExist( manifestFile );
 
-        std::ostringstream osFileName;
-        osFileName << "stash_" << m_manifest.size() << ".st";
-
-        const boost::filesystem::path stashFile = m_stashDirectory / osFileName.str();
-
-        if ( boost::filesystem::exists( stashFile ) )
+        // determine a new stash file
+        boost::filesystem::path stashFile;
+        for( std::size_t szFileID = m_manifest.size();;++szFileID)
         {
-            boost::filesystem::remove( stashFile );
+            std::ostringstream osFileName;
+            osFileName << "stash_" << szFileID << ".st";
+            const boost::filesystem::path tryFile = m_stashDirectory / osFileName.str();
+            if( !boost::filesystem::exists( tryFile ) )
+            {
+                stashFile = tryFile;
+                break;
+            }
         }
+
         boost::filesystem::copy( file, stashFile );
 
         m_manifest[ FileDeterminant{ file, determinant } ]

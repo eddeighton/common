@@ -87,10 +87,10 @@ bool Progress::isFinished() const
     {
         case Status::ePending   :
         case Status::eStarted   :
+        case Status::eFailed    :
             return false;
         case Status::eCached    :
         case Status::eSucceeded :
-        case Status::eFailed    :
             return true;
         default:
             THROW_RTE( "Unknown task state" );
@@ -176,6 +176,10 @@ bool Task::isReady( const RawPtrSet& finished )
     return true;
 }
     
+void Task::failed( Progress& taskProgress )
+{
+    taskProgress.failed();
+}
 
 }
 

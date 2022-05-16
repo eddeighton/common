@@ -120,6 +120,7 @@ namespace task
         
         virtual bool isReady( const RawPtrSet& finished );
         virtual void run( Progress& taskProgress ) = 0;
+        virtual void failed( Progress& taskProgress );
         
     protected:
         RawPtrSet m_dependencies;
