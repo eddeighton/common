@@ -7,6 +7,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/tokenizer.hpp>
 
 #include <algorithm>
 #include <cctype>
@@ -56,4 +57,16 @@ std::string uuid() { return style_uuid(); }
 
 std::string date() { return style_replace_non_alpha_numeric( boost::to_upper_copy( style_date_nice() ), DELIM ); }
 
+std::vector< std::string > simpleTokenise( const std::string& str, const char* pszDelimiters )
+{
+    std::vector< std::string > strings;
+    {
+        using Tokeniser = boost::tokenizer< boost::char_separator< char > >;
+        boost::char_separator< char > sep( pszDelimiters );
+        Tokeniser                     tokens( str, sep );
+        for ( Tokeniser::iterator i = tokens.begin(); i != tokens.end(); ++i )
+            strings.push_back( *i );
+    }
+    return strings;
+}
 } // namespace common

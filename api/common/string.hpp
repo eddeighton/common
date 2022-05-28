@@ -4,6 +4,7 @@
 
 #include <ostream>
 #include <string>
+#include <vector>
 
 namespace common
 {
@@ -27,6 +28,8 @@ namespace common
 
     std::string uuid();
     std::string date();
+
+    std::vector< std::string > simpleTokenise( const std::string& str, const char* pszDelimiters );
 }
 
 #endif //STRING_UTILS_6_AUGUST_2015
