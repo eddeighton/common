@@ -166,6 +166,12 @@ struct Stash::Pimpl
         m_buildHashCodes.insert( std::make_pair( key, hashCode ) );
     }
 
+    void resetBuildHashCodes()
+    {
+        MutexLock lock( m_mutex );
+        m_buildHashCodes.clear();
+    }
+
     void loadBuildHashCodes( const boost::filesystem::path& file )
     {
         if ( boost::filesystem::exists( file ) )
@@ -201,12 +207,12 @@ struct Stash::Pimpl
 
         // determine a new stash file
         boost::filesystem::path stashFile;
-        for( std::size_t szFileID = m_manifest.size();;++szFileID)
+        for ( std::size_t szFileID = m_manifest.size();; ++szFileID )
         {
             std::ostringstream osFileName;
             osFileName << "stash_" << szFileID << ".st";
             const boost::filesystem::path tryFile = m_stashDirectory / osFileName.str();
-            if( !boost::filesystem::exists( tryFile ) )
+            if ( !boost::filesystem::exists( tryFile ) )
             {
                 stashFile = tryFile;
                 break;
@@ -269,6 +275,8 @@ void Stash::setBuildHashCode( const boost::filesystem::path& key, FileHash hashC
 {
     m_pPimpl->setBuildHashCode( key, hashCode );
 }
+
+void Stash::resetBuildHashCodes() { m_pPimpl->resetBuildHashCodes(); }
 
 void Stash::loadBuildHashCodes( const boost::filesystem::path& file ) { m_pPimpl->loadBuildHashCodes( file ); }
 
