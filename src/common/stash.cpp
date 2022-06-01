@@ -6,8 +6,8 @@
 
 #include "boost/tokenizer.hpp"
 #include "boost/lexical_cast.hpp"
-#include "boost/interprocess/sync/named_mutex.hpp"
-#include "boost/interprocess/sync/scoped_lock.hpp"
+#include <shared_mutex>
+#include <mutex>
 
 #include <map>
 #include <istream>
@@ -42,11 +42,12 @@ struct Stash::Pimpl
     using Manifest    = std::map< FileDeterminant, StashItem >;
     using HashCodeMap = std::map< boost::filesystem::path, FileHash >;
 
-    // mutable std::mutex m_mutex;
-    using MutexLock = boost::interprocess::scoped_lock< boost::interprocess::named_mutex >;
-    mutable boost::interprocess::named_mutex m_mutex;
-    Manifest                                 m_manifest;
-    HashCodeMap                              m_buildHashCodes;
+    mutable std::shared_mutex m_manifestMutex, m_buildCodesMutex;
+    using WriteLock = std::unique_lock< std::shared_mutex >;
+    using ReadLock  = std::shared_lock< std::shared_mutex >;
+
+    Manifest    m_manifest;
+    HashCodeMap m_buildHashCodes;
 
     inline static const char* pszManifestFileName = "stash_manifest.txt";
 
@@ -132,7 +133,6 @@ struct Stash::Pimpl
 
     Pimpl( const boost::filesystem::path& stashDirectory )
         : m_stashDirectory( stashDirectory )
-        , m_mutex( boost::interprocess::open_or_create_t{}, "STASH_MUTEX" )
     {
         const boost::filesystem::path manifestFile = m_stashDirectory / pszManifestFileName;
         if ( boost::filesystem::exists( manifestFile ) )
@@ -152,7 +152,7 @@ struct Stash::Pimpl
 
     FileHash getBuildHashCode( const boost::filesystem::path& key ) const
     {
-        MutexLock lock( m_mutex );
+        ReadLock lock( m_buildCodesMutex );
 
         HashCodeMap::const_iterator iFind = m_buildHashCodes.find( key );
         VERIFY_RTE_MSG( iFind != m_buildHashCodes.end(), "Failed to locate hash code for: " << key.string() );
@@ -161,14 +161,14 @@ struct Stash::Pimpl
 
     void setBuildHashCode( const boost::filesystem::path& key, FileHash hashCode )
     {
-        MutexLock lock( m_mutex );
+        WriteLock lock( m_buildCodesMutex );
 
         m_buildHashCodes.insert( std::make_pair( key, hashCode ) );
     }
 
     void resetBuildHashCodes()
     {
-        MutexLock lock( m_mutex );
+        WriteLock lock( m_buildCodesMutex );
         m_buildHashCodes.clear();
     }
 
@@ -191,7 +191,7 @@ struct Stash::Pimpl
 
     void saveBuildHashCodes( const boost::filesystem::path& file ) const
     {
-        MutexLock lock( m_mutex );
+        ReadLock lock( m_buildCodesMutex );
 
         boost::filesystem::ensureFoldersExist( file );
         std::unique_ptr< boost::filesystem::ofstream > pFileStream = boost::filesystem::createNewFileStream( file );
@@ -200,7 +200,7 @@ struct Stash::Pimpl
 
     void stash( const boost::filesystem::path& file, DeterminantHash determinant )
     {
-        MutexLock lock( m_mutex );
+        WriteLock lock( m_manifestMutex );
 
         const boost::filesystem::path manifestFile = m_stashDirectory / pszManifestFileName;
         boost::filesystem::ensureFoldersExist( manifestFile );
@@ -229,7 +229,7 @@ struct Stash::Pimpl
 
     bool restore( const boost::filesystem::path& file, DeterminantHash determinant )
     {
-        MutexLock lock( m_mutex );
+        ReadLock lock( m_manifestMutex );
 
         Manifest::const_iterator iFind = m_manifest.find( FileDeterminant{ file, determinant } );
         if ( iFind != m_manifest.end() )
@@ -247,7 +247,6 @@ struct Stash::Pimpl
                             last_write_time( file, stashItem.fileTime );
                         return true;
                     }
-
                     boost::filesystem::remove( file );
                 }
                 ensureFoldersExist( file );

@@ -2,6 +2,8 @@
 #ifndef COMMON_HASH_UTILS_28_OCT_2020
 #define COMMON_HASH_UTILS_28_OCT_2020
 
+#include "assert_verify.hpp"
+
 #include "boost/filesystem/path.hpp"
 
 #include <string>
@@ -150,6 +152,21 @@ public:
         std::ostringstream os;
         toHexString( os );
         return os.str();
+    }
+
+    static HashCodeType fromHexString( const std::string& str )
+    {
+        if( str.size() > 2 )
+        {
+            if( str.substr( 0, 2 ) == "0x" )
+            {
+                HashCodeType result;
+                std::istringstream is( str.substr( 2, str.size() -2 ) );
+                is >> std::hex >> result;
+                return result;
+            }
+        }
+        THROW_RTE( "Invalid hex string: " << str );
     }
 };
 
