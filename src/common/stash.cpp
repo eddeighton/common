@@ -153,7 +153,6 @@ struct Stash::Pimpl
     FileHash getBuildHashCode( const boost::filesystem::path& key ) const
     {
         ReadLock lock( m_buildCodesMutex );
-
         HashCodeMap::const_iterator iFind = m_buildHashCodes.find( key );
         VERIFY_RTE_MSG( iFind != m_buildHashCodes.end(), "Failed to locate hash code for: " << key.string() );
         return iFind->second;
@@ -162,7 +161,6 @@ struct Stash::Pimpl
     void setBuildHashCode( const boost::filesystem::path& key, FileHash hashCode )
     {
         WriteLock lock( m_buildCodesMutex );
-
         m_buildHashCodes.insert( std::make_pair( key, hashCode ) );
     }
 
@@ -200,41 +198,51 @@ struct Stash::Pimpl
 
     void stash( const boost::filesystem::path& file, DeterminantHash determinant )
     {
-        WriteLock lock( m_manifestMutex );
-
-        const boost::filesystem::path manifestFile = m_stashDirectory / pszManifestFileName;
-        boost::filesystem::ensureFoldersExist( manifestFile );
-
-        // determine a new stash file
         boost::filesystem::path stashFile;
-        for ( std::size_t szFileID = m_manifest.size();; ++szFileID )
         {
-            std::ostringstream osFileName;
-            osFileName << "stash_" << szFileID << ".st";
-            const boost::filesystem::path tryFile = m_stashDirectory / osFileName.str();
-            if ( !boost::filesystem::exists( tryFile ) )
+            WriteLock lock( m_manifestMutex );
+
+            const boost::filesystem::path manifestFile = m_stashDirectory / pszManifestFileName;
+            boost::filesystem::ensureFoldersExist( manifestFile );
+
+            // determine a new stash file
+            for ( std::size_t szFileID = m_manifest.size();; ++szFileID )
             {
-                stashFile = tryFile;
-                break;
+                std::ostringstream osFileName;
+                osFileName << "stash_" << szFileID << ".st";
+                const boost::filesystem::path tryFile = m_stashDirectory / osFileName.str();
+                if ( !boost::filesystem::exists( tryFile ) )
+                {
+                    stashFile = tryFile;
+                    break;
+                }
             }
+
+            m_manifest[ FileDeterminant{ file, determinant } ]
+                = StashItem{ stashFile, boost::filesystem::last_write_time( file ) };
+
+            saveManifest();
         }
 
         boost::filesystem::copy( file, stashFile );
-
-        m_manifest[ FileDeterminant{ file, determinant } ]
-            = StashItem{ stashFile, boost::filesystem::last_write_time( file ) };
-
-        saveManifest();
     }
 
     bool restore( const boost::filesystem::path& file, DeterminantHash determinant )
     {
-        ReadLock lock( m_manifestMutex );
-
-        Manifest::const_iterator iFind = m_manifest.find( FileDeterminant{ file, determinant } );
-        if ( iFind != m_manifest.end() )
+        const StashItem* pStashItem = nullptr;
+        
         {
-            const StashItem& stashItem = iFind->second;
+            ReadLock lock( m_manifestMutex );
+            Manifest::const_iterator iFind = m_manifest.find( FileDeterminant{ file, determinant } );
+            if ( iFind != m_manifest.end() )
+            {
+                pStashItem = &iFind->second;
+            }
+        }
+
+        if( pStashItem )
+        {
+            const StashItem& stashItem = *pStashItem;
 
             if ( boost::filesystem::exists( stashItem.filePath ) )
             {
