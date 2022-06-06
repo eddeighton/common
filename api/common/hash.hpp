@@ -51,6 +51,21 @@ struct HashFunctor< boost::filesystem::path >
 {
     inline HashCodeType operator()( const boost::filesystem::path& value ) const { return hash_file( value ); }
 };
+template <>
+struct HashFunctor< boost::filesystem::path& >
+{
+    inline HashCodeType operator()( const boost::filesystem::path& value ) const { return hash_file( value ); }
+};
+template <>
+struct HashFunctor< const boost::filesystem::path >
+{
+    inline HashCodeType operator()( const boost::filesystem::path& value ) const { return hash_file( value ); }
+};
+template <>
+struct HashFunctor< const boost::filesystem::path& >
+{
+    inline HashCodeType operator()( const boost::filesystem::path& value ) const { return hash_file( value ); }
+};
 
 template < std::size_t Length >
 struct HashFunctor< char[ Length ] >
