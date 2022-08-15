@@ -159,7 +159,7 @@ TEST( FileUtils, loadAsciiFile1 )
     const std::string strData =
             "THE QUICK BROWN FOX JUMPED OVER THE LAZY DOG 0123456789\n"\
             "the quick brown fox jumped over the lazy dog\n"\
-            "!\"£%^&*()_+-={}[]:@~;'#<>?,./";
+            "!\"ï¿½%^&*()_+-={}[]:@~;'#<>?,./";
     {
         std::ofstream f( strTempFileName.c_str() );
         ASSERT_TRUE( f.good() );
@@ -170,4 +170,19 @@ TEST( FileUtils, loadAsciiFile1 )
     ASSERT_STREQ( strData.c_str(), str.c_str() );
 
     remove( strTempFileName );
+}
+
+TEST( FileUtils, updateFileIfChanged )
+{
+    boost::filesystem::path tempDir = boost::filesystem::temp_directory_path() / "common_tests";
+
+    boost::filesystem::path tempFile = tempDir / "test";
+    boost::filesystem::remove_all( tempDir );
+    boost::filesystem::ensureFoldersExist( tempFile );
+
+    std::string strText = "This is a test\n123_123123123";
+
+    ASSERT_TRUE( boost::filesystem::updateFileIfChanged( tempFile, strText ) );
+    ASSERT_FALSE( boost::filesystem::updateFileIfChanged( tempFile, strText ) );
+
 }

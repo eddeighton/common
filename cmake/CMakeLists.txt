@@ -30,4 +30,4 @@ set( COMMON_SRC_DIR ${COMMON_ROOT_DIR}/src )
 include (InstallRequiredSystemLibraries)
 
 add_subdirectory( common )
-#add_subdirectory( unit_test_runner )
+add_subdirectory( unit_test_runner )

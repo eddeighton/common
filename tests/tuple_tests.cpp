@@ -62,7 +62,7 @@ TEST( Tuple, IO_3 )
     TupleComparison( T1, "1234567890 !\"£$%^&*_+-=" );
     TupleComparison( T1, "<>.:@;'#~[]{} The quick brown fox jumped over the lazy dog" );
 }
-
+/*
 TEST( Tuple, IO_4 )
 {
     typedef std::tuple< bool, int, char > T2;
@@ -71,8 +71,8 @@ TEST( Tuple, IO_4 )
     typedef std::tuple< T2, T3, std::string, T4 > T1;
     TupleComparison( T1, T2( false, 1, 'x' ), T3( 123.123, 123U, 'R' ), "test test", T4( true, -123, 0.123123f ) );
 
-}
-
+}*/
+/*
 TEST( Tuple, IO_5 )
 {
     typedef std::tuple< int, std::string, float > T1;
@@ -81,4 +81,4 @@ TEST( Tuple, IO_5 )
 
     TupleComparison( T3, T1( 0, "a b c", 0.123f ), T2( T1( 1, "d e f", 123.123f ), T1( 321, "", 0.0f ), 0.0 ), "nice test" );
 }
-
+*/

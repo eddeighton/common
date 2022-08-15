@@ -152,7 +152,7 @@ struct Stash::Pimpl
 
     FileHash getBuildHashCode( const boost::filesystem::path& key ) const
     {
-        ReadLock lock( m_buildCodesMutex );
+        ReadLock                    lock( m_buildCodesMutex );
         HashCodeMap::const_iterator iFind = m_buildHashCodes.find( key );
         VERIFY_RTE_MSG( iFind != m_buildHashCodes.end(), "Failed to locate hash code for: " << key.string() );
         return iFind->second;
@@ -196,6 +196,17 @@ struct Stash::Pimpl
         save( m_buildHashCodes, *pFileStream );
     }
 
+    const std::map< boost::filesystem::path, FileHash > getBuildHashCodes() const
+    {
+        ReadLock lock( m_buildCodesMutex );
+        return m_buildHashCodes;
+    }
+    void setBuildHashCodes( const std::map< boost::filesystem::path, FileHash >& buildHashCodes )
+    {
+        ReadLock lock( m_buildCodesMutex );
+        m_buildHashCodes = buildHashCodes;
+    }
+
     void stash( const boost::filesystem::path& file, DeterminantHash determinant )
     {
         boost::filesystem::path stashFile;
@@ -230,9 +241,9 @@ struct Stash::Pimpl
     bool restore( const boost::filesystem::path& file, DeterminantHash determinant )
     {
         const StashItem* pStashItem = nullptr;
-        
+
         {
-            ReadLock lock( m_manifestMutex );
+            ReadLock                 lock( m_manifestMutex );
             Manifest::const_iterator iFind = m_manifest.find( FileDeterminant{ file, determinant } );
             if ( iFind != m_manifest.end() )
             {
@@ -240,7 +251,7 @@ struct Stash::Pimpl
             }
         }
 
-        if( pStashItem )
+        if ( pStashItem )
         {
             const StashItem& stashItem = *pStashItem;
 
@@ -288,6 +299,13 @@ void Stash::resetBuildHashCodes() { m_pPimpl->resetBuildHashCodes(); }
 void Stash::loadBuildHashCodes( const boost::filesystem::path& file ) { m_pPimpl->loadBuildHashCodes( file ); }
 
 void Stash::saveBuildHashCodes( const boost::filesystem::path& file ) const { m_pPimpl->saveBuildHashCodes( file ); }
+
+std::map< boost::filesystem::path, FileHash > Stash::getBuildHashCodes() const { return m_pPimpl->getBuildHashCodes(); }
+
+void Stash::setBuildHashCodes( const std::map< boost::filesystem::path, FileHash >& buildHashCodes )
+{
+    m_pPimpl->setBuildHashCodes( buildHashCodes );
+}
 
 void Stash::stash( const boost::filesystem::path& file, const DeterminantHash determinant )
 {

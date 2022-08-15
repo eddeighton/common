@@ -7,6 +7,7 @@
 #include "boost/filesystem/path.hpp"
 
 #include <memory>
+#include <map>
 
 namespace task
 {
@@ -73,6 +74,8 @@ public:
     void     resetBuildHashCodes();
     void     loadBuildHashCodes( const boost::filesystem::path& file );
     void     saveBuildHashCodes( const boost::filesystem::path& file ) const;
+    std::map< boost::filesystem::path, FileHash > getBuildHashCodes() const;
+    void setBuildHashCodes( const std::map< boost::filesystem::path, FileHash >& buildHashCodes );
 
     void stash( const boost::filesystem::path& file, DeterminantHash code );
     bool restore( const boost::filesystem::path& file, DeterminantHash code );
