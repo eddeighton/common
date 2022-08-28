@@ -209,6 +209,8 @@ struct Stash::Pimpl
 
     void stash( const boost::filesystem::path& file, DeterminantHash determinant )
     {
+        VERIFY_RTE_MSG( boost::filesystem::exists( file ), "File not found: " << file.string() );
+        
         boost::filesystem::path stashFile;
         {
             WriteLock lock( m_manifestMutex );
