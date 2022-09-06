@@ -1,11 +1,27 @@
 
 
 #include "common/hash.hpp"
+#include "common/stash.hpp"
 
 #include <gtest/gtest.h>
 
 TEST( Stash, Basic )
 {
+    {
+        const std::size_t szHash = 123;
+        common::Hash h1( 123u );
+        ASSERT_EQ( h1.get(), szHash );
+    }
+    {
+        const std::size_t szHash = 123;
+        common::Hash h1{ 123u };
+        ASSERT_EQ( h1.get(), szHash );
+    }
+    {
+        const std::size_t szHash = 123;
+        common::Hash h1{ 123u, 123u };
+        ASSERT_NE( h1.get(), szHash );
+    }
     {
         common::Hash h1( 123u );
         common::Hash h2( 123u );
@@ -15,6 +31,36 @@ TEST( Stash, Basic )
     {
         common::Hash h1( 123u );
         common::Hash h2( 124u );
+        ASSERT_NE( h1, h2 );
+    }
+}
+
+TEST( Stash, Determinants )
+{
+    {
+        const std::size_t szHash = 123;
+        task::DeterminantHash h1( 123u );
+        ASSERT_EQ( h1.get(), szHash );
+    }
+    {
+        const std::size_t szHash = 123;
+        task::DeterminantHash h1{ 123u };
+        ASSERT_EQ( h1.get(), szHash );
+    }
+    {
+        const std::size_t szHash = 123;
+        task::DeterminantHash h1{ 123u, 123u };
+        ASSERT_NE( h1.get(), szHash );
+    }
+    {
+        task::DeterminantHash h1( 123u );
+        task::DeterminantHash h2( 123u );
+        ASSERT_EQ( h1, h2 );
+    }
+
+    {
+        task::DeterminantHash h1( 123u );
+        task::DeterminantHash h2( 124u );
         ASSERT_NE( h1, h2 );
     }
 }

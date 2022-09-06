@@ -64,19 +64,42 @@ public:
     }
 };
 
+class BuildHashCodes
+{
+public:
+    using HashCodeMap = std::map< boost::filesystem::path, FileHash >;
+
+    inline const HashCodeMap& get() const { return m_buildHashCodes; }
+
+    inline FileHash get( const boost::filesystem::path& key ) const
+    {
+        HashCodeMap::const_iterator iFind = m_buildHashCodes.find( key );
+        VERIFY_RTE_MSG( iFind != m_buildHashCodes.end(), "Failed to locate hash code for: " << key.string() );
+        return iFind->second;
+    }
+
+    inline void set( const boost::filesystem::path& key, FileHash hashCode )
+    {
+        m_buildHashCodes.insert( std::make_pair( key, hashCode ) );
+    }
+
+    inline void set( const std::map< boost::filesystem::path, task::FileHash >& buidHashCodes )
+    {
+        m_buildHashCodes = buidHashCodes;
+    }
+
+    inline void reset() { m_buildHashCodes.clear(); }
+
+private:
+    HashCodeMap m_buildHashCodes;
+};
+
 class Stash
 {
 public:
     Stash( const boost::filesystem::path& stashDirectory );
 
-    FileHash getBuildHashCode( const boost::filesystem::path& filePath ) const;
-    void     setBuildHashCode( const boost::filesystem::path& filePath, FileHash hashCode );
-    void     resetBuildHashCodes();
-    void     loadBuildHashCodes( const boost::filesystem::path& file );
-    void     saveBuildHashCodes( const boost::filesystem::path& file ) const;
-    std::map< boost::filesystem::path, FileHash > getBuildHashCodes() const;
-    void setBuildHashCodes( const std::map< boost::filesystem::path, FileHash >& buildHashCodes );
-
+    void clear();
     void stash( const boost::filesystem::path& file, DeterminantHash code );
     bool restore( const boost::filesystem::path& file, DeterminantHash code );
 
