@@ -20,11 +20,26 @@
 
 //ignor clang warnings
 
+#ifdef __clang__
+
+#elif __GNUC__
+
+#pragma diagnostic ignored( disable : 4146) // unary minus operator applied to unsigned type,
+#pragma diagnostic ignored( disable : 4141) //'inline': used more than once
+#pragma diagnostic ignored( disable : 4141) //'argument': conversion from 'uint64_t' to 'size_t'
+#pragma diagnostic ignored( disable : 4244) //'argument': conversion from 'uint64_t' to 'uint32_t'
+#pragma diagnostic ignored( disable : 4996) //
+
+#elif _MSC_VER
+
 #pragma warning( disable : 4146) // unary minus operator applied to unsigned type,
 #pragma warning( disable : 4141) //'inline': used more than once
 #pragma warning( disable : 4141) //'argument': conversion from 'uint64_t' to 'size_t'
 #pragma warning( disable : 4244) //'argument': conversion from 'uint64_t' to 'uint32_t'
 #pragma warning( disable : 4996) //
+
+#endif
+
 //warning C4996: 'std::iterator<IteratorCategoryT,T,DifferenceTypeT,PointerT,ReferenceT >::reference': 
 //warning STL4015: The std::iterator class template (used as a base class to provide typedefs) is deprecated in C++17. 
 //(The <iterator> header is NOT deprecated.) 
