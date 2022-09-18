@@ -77,7 +77,7 @@ DO_STUFF_AND_REQUIRE_SEMI_COLON                                     \
     ::GLenum openglErrorCode = ::glGetError();                      \
     if( GL_NO_ERROR != openglErrorCode )                            \
     {                                                               \
-        log << "FILE " << __FILE__ << " LINE:" << __LINE__ << "\nFUNCTION:" << \
+        log << "FILE " << __FILE__ << ":" << __LINE__ << "\nFUNCTION:" << \
             BOOST_CURRENT_FUNCTION << "\nERROR:" << OpenGL::getErrorString( openglErrorCode ) << "\n";   \
         DEBUG_BREAK( _CRT_ASSERT, OpenGL::getErrorString( openglErrorCode ) );\
     }                                                               \
@@ -89,7 +89,7 @@ DO_STUFF_AND_REQUIRE_SEMI_COLON                                     \
     ::GLenum openglErrorCode = ::glGetError();                      \
     if( GL_NO_ERROR != openglErrorCode )                            \
     {                                                               \
-        log << "FILE " << __FILE__ << " LINE:" << __LINE__ << "\nFUNCTION:" << BOOST_CURRENT_FUNCTION << \
+        log << "FILE " << __FILE__ << ":" << __LINE__ << "\nFUNCTION:" << BOOST_CURRENT_FUNCTION << \
             "\nCODE " << #code << \
             "\nERROR:" << OpenGL::getErrorString( openglErrorCode ) << "\n"; \
         DEBUG_BREAK( _CRT_ASSERT, OpenGL::getErrorString( openglErrorCode ) );\
@@ -104,7 +104,7 @@ DO_STUFF_AND_REQUIRE_SEMI_COLON                                     \
     ::GLenum openglErrorCode = ::glGetError();                      \
     if( GL_NO_ERROR != openglErrorCode )                            \
     {                                                               \
-        log << "FILE " << __FILE__ << " LINE:" << __LINE__ << "\nFUNCTION:" << \
+        log << "FILE " << __FILE__ << ":" << __LINE__ << "\nFUNCTION:" << \
             BOOST_CURRENT_FUNCTION << "\nERROR:" << OpenGL::getErrorString( openglErrorCode ) << "\n";   \
     }                                                               \
 )
@@ -115,7 +115,7 @@ DO_STUFF_AND_REQUIRE_SEMI_COLON                                     \
     ::GLenum openglErrorCode = ::glGetError();                      \
     if( GL_NO_ERROR != openglErrorCode )                            \
     {                                                               \
-        log << "FILE " << __FILE__ << " LINE:" << __LINE__ << "\nFUNCTION:" << BOOST_CURRENT_FUNCTION << \
+        log << "FILE " << __FILE__ << ":" << __LINE__ << "\nFUNCTION:" << BOOST_CURRENT_FUNCTION << \
             "\nCODE " << #code << \
             "\nERROR:" << OpenGL::getErrorString( openglErrorCode ) << "\n"; \
     }                                                               \

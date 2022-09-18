@@ -51,13 +51,13 @@ Copyright Deighton Systems Limited (c) 2015
 #define THROW_BACKTRACE( exceptionType, msg )                                                                        \
     DO_STUFF_AND_REQUIRE_SEMI_COLON( DEBUG_BREAK( _CRT_ERROR, msg ); std::ostringstream _os2;                        \
                                      Common::getBackTrace( _os2 );                                                   \
-                                     _os2 << common::COLOUR_RED_BEGIN << "FILE " << __FILE__ << " LINE:" << __LINE__ \
+                                     _os2 << common::COLOUR_RED_BEGIN << "FILE " << __FILE__ << ":" << __LINE__ \
                                           << "\nMSG:" << msg << common::COLOUR_END;                                  \
                                      throw exceptionType( _os2.str() ); )
 
 #define THROW( exceptionType, msg )                                                                                  \
     DO_STUFF_AND_REQUIRE_SEMI_COLON( DEBUG_BREAK( _CRT_ERROR, msg ); std::ostringstream _os2;                        \
-                                     _os2 << common::COLOUR_RED_BEGIN << "FILE " << __FILE__ << " LINE:" << __LINE__ \
+                                     _os2 << common::COLOUR_RED_BEGIN << "FILE " << __FILE__ << ":" << __LINE__ \
                                           << "\nMSG:" << msg << common::COLOUR_END;                                  \
                                      throw exceptionType( _os2.str() ); )
 
@@ -79,7 +79,7 @@ Copyright Deighton Systems Limited (c) 2015
 
 #define THROW_BACKTRACE( exceptionType, msg )                                                                       \
     DO_STUFF_AND_REQUIRE_SEMI_COLON( std::ostringstream _os; Common::getBackTrace( _os );                           \
-                                     _os << common::COLOUR_RED_BEGIN << "FILE " << __FILE__ << " LINE:" << __LINE__ \
+                                     _os << common::COLOUR_RED_BEGIN << "FILE " << __FILE__ << ":" << __LINE__ \
                                          << " FUNCTION:" << BOOST_CURRENT_FUNCTION << "\nMSG:" << msg               \
                                          << common::COLOUR_END;                                                     \
                                      throw exceptionType( _os.str() ); )

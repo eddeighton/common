@@ -7,13 +7,7 @@
 #pragma warning( disable : 4275 ) //non dll-interface class 'testing::TestPartResultReporterInterface'
 #endif
 
-#include <stdexcept>
-#include <list>
-#include <string>
-#include <sstream>
-#include <fstream>
-#include <iterator>
-#include <memory>
+#include <gtest/gtest.h>
 
 #include <boost/tokenizer.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -23,7 +17,13 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include <gtest/gtest.h>
+#include <stdexcept>
+#include <list>
+#include <string>
+#include <sstream>
+#include <fstream>
+#include <iterator>
+#include <memory>
 
 #ifdef _WIN32
 #pragma warning( pop )

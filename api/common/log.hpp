@@ -14,7 +14,7 @@
 #define LOG( file, msg ) \
     DO_STUFF_AND_REQUIRE_SEMI_COLON( \
         std::ofstream _os( file, std::ios::app ); \
-        _os << "FILE " << __FILE__ << " LINE:" << __LINE__ << " FUNCTION:" << BOOST_CURRENT_FUNCTION << "MSG:" << msg << "\n"; \
+        _os << "FILE " << __FILE__ << ":" << __LINE__ << " FUNCTION:" << BOOST_CURRENT_FUNCTION << "MSG:" << msg << "\n"; \
         )
 
 
