@@ -92,10 +92,10 @@ Copyright Deighton Systems Limited (c) 2015
 
 #endif //_DEBUG
 
-#define THROW_RTE( msg ) THROW_BACKTRACE( std::runtime_error, msg )
+#define THROW_RTE( msg ) THROW( std::runtime_error, msg )
 
 #define VERIFY( expression, exceptionType, msg ) \
-    DO_STUFF_AND_REQUIRE_SEMI_COLON( if ( !( expression ) ) { THROW_BACKTRACE( exceptionType, msg ); } )
+    DO_STUFF_AND_REQUIRE_SEMI_COLON( if ( !( expression ) ) { THROW( exceptionType, msg ); } )
 
 #define VERIFY_RTE_MSG( expression, msg ) VERIFY( expression, std::runtime_error, msg )
 #define VERIFY_RTE( expression ) VERIFY( expression, std::runtime_error, "" )
