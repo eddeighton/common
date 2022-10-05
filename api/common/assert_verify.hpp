@@ -93,6 +93,7 @@ Copyright Deighton Systems Limited (c) 2015
 #endif //_DEBUG
 
 #define THROW_RTE( msg ) THROW( std::runtime_error, msg )
+#define THROW_TODO THROW( std::runtime_error, "TODO - this is not done yet!" )
 
 #define VERIFY( expression, exceptionType, msg ) \
     DO_STUFF_AND_REQUIRE_SEMI_COLON( if ( !( expression ) ) { THROW( exceptionType, msg ); } )
