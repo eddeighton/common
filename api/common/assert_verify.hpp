@@ -48,17 +48,17 @@ Copyright Deighton Systems Limited (c) 2015
 //    DO_STUFF_AND_REQUIRE_SEMI_COLON( std::ostringstream _os_x; Common::getBackTrace( _os_x ); _os_x << msg << "\n"; \
 //                                     Common::msvcr_debugAssert( type, __FILE__, __LINE__, BOOST_CURRENT_FUNCTION, _os_x.str().c_str() ); )
 
-#define THROW_BACKTRACE( exceptionType, msg )                                                                        \
-    DO_STUFF_AND_REQUIRE_SEMI_COLON( DEBUG_BREAK( _CRT_ERROR, msg ); std::ostringstream _os2;                        \
-                                     Common::getBackTrace( _os2 );                                                   \
+#define THROW_BACKTRACE( exceptionType, msg )                                                                   \
+    DO_STUFF_AND_REQUIRE_SEMI_COLON( DEBUG_BREAK( _CRT_ERROR, msg ); std::ostringstream _os2;                   \
+                                     Common::getBackTrace( _os2 );                                              \
                                      _os2 << common::COLOUR_RED_BEGIN << "FILE " << __FILE__ << ":" << __LINE__ \
-                                          << "\nMSG:" << msg << common::COLOUR_END;                                  \
+                                          << "\nMSG:" << msg << common::COLOUR_END;                             \
                                      throw exceptionType( _os2.str() ); )
 
-#define THROW( exceptionType, msg )                                                                                  \
-    DO_STUFF_AND_REQUIRE_SEMI_COLON( DEBUG_BREAK( _CRT_ERROR, msg ); std::ostringstream _os2;                        \
+#define THROW( exceptionType, msg )                                                                             \
+    DO_STUFF_AND_REQUIRE_SEMI_COLON( DEBUG_BREAK( _CRT_ERROR, msg ); std::ostringstream _os2;                   \
                                      _os2 << common::COLOUR_RED_BEGIN << "FILE " << __FILE__ << ":" << __LINE__ \
-                                          << "\nMSG:" << msg << common::COLOUR_END;                                  \
+                                          << "\nMSG:" << msg << common::COLOUR_END;                             \
                                      throw exceptionType( _os2.str() ); )
 
 #define ASSERT_MSG( expr, msg ) \
@@ -77,11 +77,11 @@ Copyright Deighton Systems Limited (c) 2015
 #define ASSERT_MSG( expr, msg ) DO_NOTHING_BUT_REQUIRE_SEMI_COLON
 #define ASSERT( expr ) DO_NOTHING_BUT_REQUIRE_SEMI_COLON
 
-#define THROW_BACKTRACE( exceptionType, msg )                                                                       \
-    DO_STUFF_AND_REQUIRE_SEMI_COLON( std::ostringstream _os; Common::getBackTrace( _os );                           \
+#define THROW_BACKTRACE( exceptionType, msg )                                                                  \
+    DO_STUFF_AND_REQUIRE_SEMI_COLON( std::ostringstream _os; Common::getBackTrace( _os );                      \
                                      _os << common::COLOUR_RED_BEGIN << "FILE " << __FILE__ << ":" << __LINE__ \
-                                         << " FUNCTION:" << BOOST_CURRENT_FUNCTION << "\nMSG:" << msg               \
-                                         << common::COLOUR_END;                                                     \
+                                         << " FUNCTION:" << BOOST_CURRENT_FUNCTION << "\nMSG:" << msg          \
+                                         << common::COLOUR_END;                                                \
                                      throw exceptionType( _os.str() ); )
 
 #define THROW( exceptionType, msg ) \
@@ -100,5 +100,8 @@ Copyright Deighton Systems Limited (c) 2015
 
 #define VERIFY_RTE_MSG( expression, msg ) VERIFY( expression, std::runtime_error, msg )
 #define VERIFY_RTE( expression ) VERIFY( expression, std::runtime_error, "" )
+
+#define DISABLE_OPTIMIZATIONS DO_STUFF_AND_REQUIRE_SEMI_COLON( #pragma GCC push_options #pragma GCC optimize( 0 ) )
+#define ENABLE_OPTIMIZATIONS #pragma GCC pop_options
 
 #endif // EDSASSERT_20_12_2012
