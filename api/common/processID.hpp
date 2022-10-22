@@ -3,10 +3,28 @@
 #define PROCESSID_8_12_2016
 
 #include <cstddef>
+#include <ostream>
 
-namespace Common
+namespace common
 {
-    size_t getProcessID();
-}
+class ProcessID
+{
+    ProcessID( int szPID, const std::string& strDesc );
 
-#endif //PROCESSID_8_12_2016
+public:
+    static ProcessID get();
+    static void      setDescription( const char* pszDescToCopy );
+
+    int         getPID() const { return m_pid; }
+    const char* getDescription() const { return m_description.c_str(); }
+
+private:
+    int                m_pid = 0U;
+    const std::string& m_description;
+};
+} // namespace common
+
+std::ostream& operator<<( std::ostream& os, common::ProcessID processID );
+
+#endif // PROCESSID_8_12_2016
+

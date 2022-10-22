@@ -8,7 +8,7 @@
 
 #include "common/assert_verify.hpp"
 
-namespace Common
+namespace common
 {
 
 namespace karma = boost::spirit::karma;
@@ -39,7 +39,7 @@ void escapeString( const std::string& strInput, std::ostream& os )
     typedef std::ostream_iterator< char > sink_type;
     sink_type                             sink( os, nullptr );
 
-    Common::escaped_string< sink_type > theGrammar;
+    common::escaped_string< sink_type > theGrammar;
     if ( !boost::spirit::karma::generate( sink, theGrammar, strInput ) )
     {
         THROW_RTE( "Generating escaped string failed for:" << strInput );
@@ -53,4 +53,4 @@ std::string escapeString( const std::string& strInput )
     return os.str();
 }
 
-} // namespace Common
+} // namespace common

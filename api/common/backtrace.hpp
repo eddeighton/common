@@ -10,7 +10,7 @@ Copyright Deighton Systems Limited (c) 2016
 
 #include <boost/assert.hpp>
 
-namespace Common
+namespace common
 {
     
 void disableDebugErrorPrompts();

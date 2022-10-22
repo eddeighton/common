@@ -9,7 +9,7 @@
 
 #include "requireSemicolon.hpp"
 
-//Common::getBackTrace( _os );\
+//common::getBackTrace( _os );\
 
 #define LOG( file, msg ) \
     DO_STUFF_AND_REQUIRE_SEMI_COLON( \

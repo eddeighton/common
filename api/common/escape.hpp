@@ -23,7 +23,7 @@
 #include <string>
 #include <ostream>
 
-namespace Common
+namespace common
 {
 
 void escapeString( const std::string& strInput, std::ostream& os );

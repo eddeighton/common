@@ -42,7 +42,7 @@ Copyright Deighton Systems Limited (c) 2016
 
 #pragma comment( lib, "Dbghelp.lib" )
 
-namespace Common
+namespace common
 {
     static bool g_enable_debug_error_prompts = true;
     
@@ -166,7 +166,7 @@ namespace boost
 
 #else //_DEBUG
 
-namespace Common
+namespace common
 {
     void disableDebugErrorPrompts()
     {
@@ -193,12 +193,10 @@ namespace boost
     void assertion_failed( char const * expr, char const * function, char const * file, long line )
     {
         THROW_RTE( "Boost called abort with: " << expr << " : " << function << " : " << file << ":" << line ); 
-        //::abort();
     }
     void assertion_failed_msg(char const * expr, char const * msg, char const * function, char const * file, long line)
     {
-        THROW_RTE( "Boost called abort with: " << expr << " : " << function << " : " << file << ":" << line << " : " << msg ); 
-        //::abort();
+        THROW_RTE( "Boost called assert with: " << expr << " : " << function << " : " << file << ":" << line << " : " << msg ); 
     }
     void throw_exception(class std::exception const & e)
     {

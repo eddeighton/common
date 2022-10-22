@@ -3,12 +3,29 @@
 
 #include <boost/process.hpp>
 
-namespace Common
+#include <string>
+
+namespace common
 {
 
-size_t getProcessID()
+namespace
 {
-    return boost::this_process::get_id();
+static std::string g_processDesc;
 }
 
+ProcessID::ProcessID( int szPID, const std::string& strDesc )
+    : m_pid( szPID )
+    , m_description( strDesc )
+{
+}
+
+ProcessID ProcessID::get() { return ProcessID{ boost::this_process::get_id(), g_processDesc }; }
+
+void ProcessID::setDescription( const char* pszDescToCopy ) { g_processDesc = pszDescToCopy; }
+
+} // namespace common
+
+std::ostream& operator<<( std::ostream& os, common::ProcessID processID )
+{
+    return os << "PID: " << processID.getPID() << " " << processID.getDescription();
 }

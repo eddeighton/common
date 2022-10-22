@@ -9,7 +9,7 @@
 
 #include "assert_verify.hpp"
 
-namespace Common
+namespace common
 {
 
 template< unsigned int N >
@@ -106,7 +106,7 @@ template<typename... Args>
 inline std::ostream& operator<<( std::ostream& os, const std::tuple<Args...>& t )
 {
     os << '(';
-    Common::SerializeOut< sizeof...(Args) >::serialize( os, t );
+    common::SerializeOut< sizeof...(Args) >::serialize( os, t );
     os << ')';
     return os;
 }
@@ -117,7 +117,7 @@ inline std::istream& operator>>( std::istream& is, std::tuple<Args...>& t )
     char c;
     is >> std::skipws >> c;
     VERIFY_RTE( c == '(' );
-    Common::SerializeIn< sizeof...(Args) >::serialize( is, t );
+    common::SerializeIn< sizeof...(Args) >::serialize( is, t );
     return is;
 }
 

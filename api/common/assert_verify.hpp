@@ -31,6 +31,7 @@ Copyright Deighton Systems Limited (c) 2015
 #include <boost/current_function.hpp>
 
 #include "requireSemicolon.hpp"
+#include "processID.hpp"
 #include "backtrace.hpp"
 #include "terminal.hpp"
 
@@ -45,20 +46,21 @@ Copyright Deighton Systems Limited (c) 2015
 
 #define DEBUG_BREAK( type, msg ) DO_NOTHING_BUT_REQUIRE_SEMI_COLON
 //#define DEBUG_BREAK( type, msg )                                                                                    \
-//    DO_STUFF_AND_REQUIRE_SEMI_COLON( std::ostringstream _os_x; Common::getBackTrace( _os_x ); _os_x << msg << "\n"; \
-//                                     Common::msvcr_debugAssert( type, __FILE__, __LINE__, BOOST_CURRENT_FUNCTION, _os_x.str().c_str() ); )
+//    DO_STUFF_AND_REQUIRE_SEMI_COLON( std::ostringstream _os_x; common::getBackTrace( _os_x ); _os_x << msg << "\n"; \
+//                                     common::msvcr_debugAssert( type, __FILE__, __LINE__, BOOST_CURRENT_FUNCTION, _os_x.str().c_str() ); )
 
-#define THROW_BACKTRACE( exceptionType, msg )                                                                   \
-    DO_STUFF_AND_REQUIRE_SEMI_COLON( DEBUG_BREAK( _CRT_ERROR, msg ); std::ostringstream _os2;                   \
-                                     Common::getBackTrace( _os2 );                                              \
-                                     _os2 << common::COLOUR_RED_BEGIN << "FILE " << __FILE__ << ":" << __LINE__ \
-                                          << "\nMSG:" << msg << common::COLOUR_END;                             \
-                                     throw exceptionType( _os2.str() ); )
+#define THROW_BACKTRACE( exceptionType, msg )                                                                      \
+    DO_STUFF_AND_REQUIRE_SEMI_COLON(                                                                               \
+        using ::operator<<; DEBUG_BREAK( _CRT_ERROR, msg ); std::ostringstream _os2; common::getBackTrace( _os2 ); \
+        _os2 << common::COLOUR_RED_BEGIN << "PROCESS " << common::ProcessID::get() << " FILE " << __FILE__ << ":"  \
+             << __LINE__ << "\nMSG:" << msg << common::COLOUR_END;                                                 \
+        throw exceptionType( _os2.str() ); )
 
-#define THROW( exceptionType, msg )                                                                             \
-    DO_STUFF_AND_REQUIRE_SEMI_COLON( DEBUG_BREAK( _CRT_ERROR, msg ); std::ostringstream _os2;                   \
-                                     _os2 << common::COLOUR_RED_BEGIN << "FILE " << __FILE__ << ":" << __LINE__ \
-                                          << "\nMSG:" << msg << common::COLOUR_END;                             \
+#define THROW( exceptionType, msg )                                                                               \
+    DO_STUFF_AND_REQUIRE_SEMI_COLON( using ::operator<<; DEBUG_BREAK( _CRT_ERROR, msg ); std::ostringstream _os2; \
+                                     _os2 << common::COLOUR_RED_BEGIN << "PROCESS " << common::ProcessID::get()   \
+                                          << " FILE " << __FILE__ << ":" << __LINE__ << "\nMSG:" << msg           \
+                                          << common::COLOUR_END;                                                  \
                                      throw exceptionType( _os2.str() ); )
 
 #define ASSERT_MSG( expr, msg ) \
@@ -78,7 +80,7 @@ Copyright Deighton Systems Limited (c) 2015
 #define ASSERT( expr ) DO_NOTHING_BUT_REQUIRE_SEMI_COLON
 
 #define THROW_BACKTRACE( exceptionType, msg )                                                                  \
-    DO_STUFF_AND_REQUIRE_SEMI_COLON( std::ostringstream _os; Common::getBackTrace( _os );                      \
+    DO_STUFF_AND_REQUIRE_SEMI_COLON( std::ostringstream _os; common::getBackTrace( _os );                      \
                                      _os << common::COLOUR_RED_BEGIN << "FILE " << __FILE__ << ":" << __LINE__ \
                                          << " FUNCTION:" << BOOST_CURRENT_FUNCTION << "\nMSG:" << msg          \
                                          << common::COLOUR_END;                                                \
