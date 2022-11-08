@@ -103,7 +103,4 @@ Copyright Deighton Systems Limited (c) 2015
 #define VERIFY_RTE_MSG( expression, msg ) VERIFY( expression, std::runtime_error, msg )
 #define VERIFY_RTE( expression ) VERIFY( expression, std::runtime_error, "" )
 
-#define DISABLE_OPTIMIZATIONS DO_STUFF_AND_REQUIRE_SEMI_COLON( #pragma GCC push_options #pragma GCC optimize( 0 ) )
-#define ENABLE_OPTIMIZATIONS #pragma GCC pop_options
-
 #endif // EDSASSERT_20_12_2012
