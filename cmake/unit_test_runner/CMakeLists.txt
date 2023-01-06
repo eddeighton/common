@@ -14,7 +14,7 @@ set( COMMON_UNIT_TESTS
 	 ${COMMON_TEST_DIR}/grammar_tests.cpp
 	 ${COMMON_TEST_DIR}/inplace_allocator_tests.cpp
 	 ${COMMON_TEST_DIR}/math_tests.cpp
-	 ${COMMON_TEST_DIR}/preprocessor_tests.cpp
+	 # ${COMMON_TEST_DIR}/preprocessor_tests.cpp
 	 ${COMMON_TEST_DIR}/rounding_tests.cpp
 	 ${COMMON_TEST_DIR}/tuple_tests.cpp
 	 ${COMMON_TEST_DIR}/scheduler_tests.cpp
@@ -37,9 +37,8 @@ link_gtest( common_tests )
 
 target_link_libraries(common_tests commonlib)
 
-gtest_add_tests( TARGET common_tests)
+gtest_add_tests( TARGET common_tests TEST_LIST AllCommonTests)
 
 install( TARGETS common_tests DESTINATION bin)
 
-add_custom_command( TARGET common_tests POST_BUILD COMMAND ctest --output-on-failure )
-
+add_custom_command( TARGET common_tests POST_BUILD COMMAND ctest --output-on-failure -C $<CONFIG> )

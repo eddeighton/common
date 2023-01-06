@@ -2,6 +2,10 @@
 #ifndef PREPROCESSOR_2_SEPT_2015
 #define PREPROCESSOR_2_SEPT_2015
 
+#ifdef _WIN32
+// NOTE - windows fix required
+#else
+
 #include <string>
 #include <vector>
 #include <map>
@@ -19,9 +23,10 @@
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/variant.hpp>
 
-#include "common/file.hpp"
 #include "common/grammar.hpp"
 #include "common/variant_utils.hpp"
+
+#ifdef BUILD_COMMON_PREPROCESSOR
 
 namespace Preprocessor
 {
@@ -29,13 +34,13 @@ namespace Preprocessor
     class IncludeDirective : public std::string
     {
     public:
-        IncludeDirective(){}
+        IncludeDirective() = default;
         IncludeDirective( const std::string& str ) : std::string( str ) {}
         IncludeDirective( const char* pszStr ) : std::string( pszStr ) {}
     };
 
-    typedef boost::variant< std::string, IncludeDirective > PreprocessVariant;
-    typedef std::vector< PreprocessVariant > PreprocessVariantVector;
+    using PreprocessVariant = boost::variant<std::string, IncludeDirective>;
+    using PreprocessVariantVector = std::vector<PreprocessVariant>;
 
     template< typename Iterator >
     class ProprocessorGrammar : public boost::spirit::qi::grammar< Iterator, PreprocessVariantVector() >
@@ -44,6 +49,7 @@ namespace Preprocessor
         ProprocessorGrammar(  )
         :   ProprocessorGrammar::base_type( m_main_rule, "proprocessor" )
         {
+            
             m_include_directive_rule = boost::spirit::qi::lit( "#include<" ) >> *( boost::spirit::ascii::char_ - '>')
 				[ boost::phoenix::push_back( boost::spirit::_val, boost::spirit::qi::_1 ) ] >> boost::spirit::qi::lit( ">" );
 
@@ -69,13 +75,13 @@ namespace Preprocessor
     public:
         boost::optional< const IncludeDirective& > operator()( const IncludeDirective& targetType ) const
         {
-            return boost::optional< const IncludeDirective& >( targetType );
+            return { targetType };
         }
 
         template< class TOther >
         boost::optional< const IncludeDirective& > operator()( TOther& ) const
         {
-            return boost::optional< const IncludeDirective& >();
+            return {};
         }
 
     };
@@ -84,12 +90,12 @@ namespace Preprocessor
     {
         std::string operator()( const IncludeDirective& directive ) const
         {
-            return std::string();
+            return {};
         }
     };
 
     template< class T >
-    static void preprocess_string( const std::string& str, T& includeFunctor, std::ostream& os )
+    static void preprocess_string( const std::string& str, const T& includeFunctor, std::ostream& os )
     {
         PreprocessVariantVector result;
 
@@ -108,19 +114,17 @@ namespace Preprocessor
 
         VERIFY_RTE( r );
 
-        for( PreprocessVariantVector::const_iterator i = result.begin(),
-             iEnd = result.end();
-             i!=iEnd; ++i )
+        for(auto & i : result)
         {
             if( boost::optional< const IncludeDirective& > opt =
-                    boost::apply_visitor( ( PreprocessorVisitor() ), *i ) )
+                    boost::apply_visitor( ( PreprocessorVisitor() ), i ) )
             {
                 os << includeFunctor( opt.get() );
             }
             else
             {
                 boost::optional< const std::string& > optString =
-                    boost::apply_visitor( boost::TypeAccessor< const std::string >(), *i );
+                    boost::apply_visitor( boost::TypeAccessor< const std::string >(), i );
                 VERIFY_RTE( optString );
                 os << optString.get();
             }
@@ -128,5 +132,6 @@ namespace Preprocessor
     }
 
 }
+#endif
 
 #endif //PREPROCESSOR_2_SEPT_2015

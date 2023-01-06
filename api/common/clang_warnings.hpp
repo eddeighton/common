@@ -17,7 +17,6 @@
 //  NEGLIGENCE) OR STRICT LIABILITY, EVEN IF COPYRIGHT OWNERS ARE ADVISED
 //  OF THE POSSIBILITY OF SUCH DAMAGES.
 
-
 //ignor clang warnings
 
 #ifdef __clang__
@@ -30,15 +29,14 @@
 #pragma diagnostic ignored( disable : 4244) //'argument': conversion from 'uint64_t' to 'uint32_t'
 #pragma diagnostic ignored( disable : 4996) //
 
-#elif _MSC_VER
+#elif _WIN32
 
 #pragma warning( disable : 4146) // unary minus operator applied to unsigned type,
 #pragma warning( disable : 4141) //'inline': used more than once
 #pragma warning( disable : 4141) //'argument': conversion from 'uint64_t' to 'size_t'
 #pragma warning( disable : 4244) //'argument': conversion from 'uint64_t' to 'uint32_t'
 #pragma warning( disable : 4996) //
-
-#endif
+#pragma warning( disable : 4624) //destructor was implicitly defined as deleted
 
 //warning C4996: 'std::iterator<IteratorCategoryT,T,DifferenceTypeT,PointerT,ReferenceT >::reference': 
 //warning STL4015: The std::iterator class template (used as a base class to provide typedefs) is deprecated in C++17. 
@@ -50,3 +48,6 @@
 //You can define _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING 
 //or _SILENCE_ALL_CXX17_DEPR ECATION_WARNINGS to acknowledge that you have received this warning. 
 #pragma warning( disable : 4291) //no matching operator delete found
+
+
+#endif

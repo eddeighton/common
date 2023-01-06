@@ -3,8 +3,8 @@
 
 #include <gtest/gtest.h>
 
+#ifdef BUILD_COMMON_PREPROCESSOR
 
-/*
 TEST( PreprocessorTests, test1 )
 {
     std::string str = "test";
@@ -44,4 +44,5 @@ TEST( PreprocessorTests, test3 )
 
     ASSERT_EQ( "test\nstufftest\nstuff", os.str() );
 }
-*/
+
+#endif

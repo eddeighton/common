@@ -46,6 +46,14 @@ struct HashFunctor< T, typename std::enable_if< std::is_base_of< HashCode, T >::
 
 HashCodeType hash_file( const boost::filesystem::path& file );
 
+// NOTE: this specialisation was ONLY introduced due to vc++ issue - further investigation justified to
+// understand why requires this on windows.
+template <>
+struct HashFunctor< HashCodeType >
+{
+    inline HashCodeType operator()( HashCodeType value ) const { return value; }
+};
+
 template <>
 struct HashFunctor< boost::filesystem::path >
 {
@@ -129,7 +137,7 @@ class Hash : public internal::HashCode
 {
 public:
     Hash() {}
-
+    
     template < typename... Args >
     Hash( const Args&... args )
         : internal::HashCode( { internal::HashFunctorVariadic()( args... ) } )

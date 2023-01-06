@@ -126,6 +126,18 @@ void loadAsciiFile( const boost::filesystem::path& filePath, std::ostream& osFil
         osFileData << '\n';
 }
 
+void loadBinaryFile( const boost::filesystem::path& filePath, std::string& strFileData )
+{
+    std::ifstream inputFileStream( filePath.native().c_str(), std::ios::in | std::ios_base::binary );
+    if ( !inputFileStream.good() )
+    {
+        THROW_RTE( "Failed to open file: " << filePath.string() );
+    }
+    std::string fileContents(
+        ( std::istreambuf_iterator< char >( inputFileStream ) ), std::istreambuf_iterator< char >() );
+    strFileData.swap( fileContents );
+}
+
 void ensureFoldersExist( const boost::filesystem::path& filePath )
 {
     // ensure the parent path exists
@@ -194,6 +206,7 @@ bool updateFileIfChanged( const boost::filesystem::path& filePath, const std::st
     bool bUpdateFile = true;
     if ( boost::filesystem::exists( filePath ) )
     {
+        // boost::iostreams::mapped_file::readonly
         boost::iostreams::mapped_file_source originalPreProcFile( filePath );
         if ( originalPreProcFile.size() == strContents.size()
              && std::equal( originalPreProcFile.data(),
@@ -206,7 +219,8 @@ bool updateFileIfChanged( const boost::filesystem::path& filePath, const std::st
 
     if ( bUpdateFile )
     {
-        std::unique_ptr< boost::filesystem::ofstream > pFileStream = boost::filesystem::createNewFileStream( filePath );
+        std::unique_ptr< boost::filesystem::ofstream > pFileStream = 
+            boost::filesystem::createBinaryOutputFileStream( filePath );
         *pFileStream << strContents;
     }
 

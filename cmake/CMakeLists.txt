@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.2)
 
+# enable configuration MSVC runtime with CMAKE_MSVC_RUNTIME_LIBRARY
+cmake_policy(SET CMP0091 NEW)
+
 project( common )
 
 #enable ctest
@@ -15,8 +18,12 @@ IF( ${WIN32} )
 add_definitions(-D_WIN32_WINNT=0x0601)
 add_definitions(-DNOMINMAX -D_NOMINMAX)
 
+# set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:DebugDLL>")
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+
 #enable folders within generated IDE build systems
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set_property(GLOBAL PROPERTY CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 ENDIF( ${WIN32} )
 

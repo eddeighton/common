@@ -45,6 +45,8 @@ void loadAsciiFile( const boost::filesystem::path& filePath, std::string& strFil
 
 void loadAsciiFile( const boost::filesystem::path& filePath, std::ostream& osFileData, bool bAddCR = true );
 
+void loadBinaryFile( const boost::filesystem::path& filePath, std::string& strFileData );
+
 void ensureFoldersExist( const boost::filesystem::path& filePath );
 
 std::unique_ptr< boost::filesystem::ofstream > createNewFileStream( const boost::filesystem::path& filePath );

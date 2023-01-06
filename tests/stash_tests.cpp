@@ -5,32 +5,35 @@
 
 #include <gtest/gtest.h>
 
+static const std::size_t szTestValue1 = 123;
+static const std::size_t szTestValue2 = 124;
+
 TEST( Stash, Basic )
 {
     {
-        const std::size_t szHash = 123;
-        common::Hash h1( 123u );
+        const std::size_t szHash = szTestValue1;
+        common::Hash h1( szHash );
         ASSERT_EQ( h1.get(), szHash );
     }
     {
-        const std::size_t szHash = 123;
-        common::Hash h1{ 123u };
+        const std::size_t szHash = szTestValue1;
+        common::Hash h1{ szTestValue1 };
         ASSERT_EQ( h1.get(), szHash );
     }
     {
-        const std::size_t szHash = 123;
-        common::Hash h1{ 123u, 123u };
+        const std::size_t szHash = szTestValue1;
+        common::Hash h1{ szTestValue1, szTestValue1 };
         ASSERT_NE( h1.get(), szHash );
     }
     {
-        common::Hash h1( 123u );
-        common::Hash h2( 123u );
+        common::Hash h1( szTestValue1 );
+        common::Hash h2( szTestValue1 );
         ASSERT_EQ( h1, h2 );
     }
 
     {
-        common::Hash h1( 123u );
-        common::Hash h2( 124u );
+        common::Hash h1( szTestValue1 );
+        common::Hash h2( szTestValue2 );
         ASSERT_NE( h1, h2 );
     }
 }
@@ -38,29 +41,29 @@ TEST( Stash, Basic )
 TEST( Stash, Determinants )
 {
     {
-        const std::size_t szHash = 123;
-        task::DeterminantHash h1( 123u );
+        const std::size_t szHash = szTestValue1;
+        task::DeterminantHash h1( szTestValue1 );
         ASSERT_EQ( h1.get(), szHash );
     }
     {
-        const std::size_t szHash = 123;
-        task::DeterminantHash h1{ 123u };
+        const std::size_t szHash = szTestValue1;
+        task::DeterminantHash h1{ szTestValue1 };
         ASSERT_EQ( h1.get(), szHash );
     }
     {
-        const std::size_t szHash = 123;
-        task::DeterminantHash h1{ 123u, 123u };
+        const std::size_t szHash = szTestValue1;
+        task::DeterminantHash h1{ szTestValue1, szTestValue1 };
         ASSERT_NE( h1.get(), szHash );
     }
     {
-        task::DeterminantHash h1( 123u );
-        task::DeterminantHash h2( 123u );
+        task::DeterminantHash h1( szTestValue1 );
+        task::DeterminantHash h2( szTestValue1 );
         ASSERT_EQ( h1, h2 );
     }
 
     {
-        task::DeterminantHash h1( 123u );
-        task::DeterminantHash h2( 124u );
+        task::DeterminantHash h1( szTestValue1 );
+        task::DeterminantHash h2( szTestValue2 );
         ASSERT_NE( h1, h2 );
     }
 }
@@ -131,10 +134,10 @@ TEST( Stash, Basic6 )
 {
     common::Hash h1( { "this", "is", "a", "test" } );
 
-    h1 ^= 123;
+    h1 ^= szTestValue1;
     h1 ^= "Testing";
-    h1 ^= 123.123;
-    h1 ^= 123.123f;
+    h1 ^= szTestValue2;
+    h1 ^= 0.123f;
     h1 ^= std::vector{ 1,2,3,4,5 };
     h1 ^= std::vector{ 'a','n','r' };
     h1 ^= h1;

@@ -180,9 +180,16 @@ TEST( FileUtils, updateFileIfChanged )
     boost::filesystem::remove_all( tempDir );
     boost::filesystem::ensureFoldersExist( tempFile );
 
-    std::string strText = "This is a test\n123_123123123";
+    const std::string strText = "This is a test\r\n123_\n123123123";
 
     ASSERT_TRUE( boost::filesystem::updateFileIfChanged( tempFile, strText ) );
+    
+    {
+        std::string str;
+        boost::filesystem::loadBinaryFile( tempFile, str );
+        ASSERT_EQ( str, strText );
+    }
+    
     ASSERT_FALSE( boost::filesystem::updateFileIfChanged( tempFile, strText ) );
 
 }

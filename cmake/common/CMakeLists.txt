@@ -18,15 +18,22 @@ source_group( src FILES ${COMMON_SOURCES} )
 add_library( commonlib ${CFG_LINK} ${COMMON_SOURCES} )
 add_library( Common::commonlib ALIAS commonlib )
 
+# see https://github.com/boostorg/phoenix/issues/111
+target_compile_definitions( commonlib PUBLIC -DBOOST_PHOENIX_STL_TUPLE_H_ )
+
 target_include_directories( commonlib PUBLIC ${COMMON_ROOT_DIR}/api )
 
 set_target_properties( commonlib PROPERTIES FOLDER common )
+
+set_target_properties( commonlib PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON )
+
+
 set_property(TARGET commonlib PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 link_boost( commonlib filesystem )
 link_boost( commonlib system )
-link_boost( commonlib timer )
 link_boost( commonlib iostreams )
+link_boost( commonlib timer )
 
 set( InstalledHeaders ${COMMON_INCLUDE_HEADERS} )
 
