@@ -117,11 +117,11 @@ int main(int argc, char* argv[])
     catch( std::exception& ex )
     {
         std::cerr << "Exception calling main: " << ex.what() << std::endl;
-        return 1;
+        return -1;
     }
     catch( ... )
     {
         std::cerr << "Unknown exception calling main" << std::endl;
-        return 1;
+        return -1;
     }
 }
