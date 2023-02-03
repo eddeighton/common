@@ -164,6 +164,18 @@ std::unique_ptr< boost::filesystem::ofstream > createNewFileStream( const boost:
     return pFileStream;
 }
 
+std::unique_ptr< boost::filesystem::ifstream > loadFileStream( const boost::filesystem::path& filePath )
+{
+    std::unique_ptr< boost::filesystem::ifstream > pFileStream(
+        new boost::filesystem::ifstream( filePath, std::ios_base::out ) );
+    if ( !pFileStream->good() )
+    {
+        THROW_RTE( "Failed to open file: " << filePath.string() );
+    }
+
+    return pFileStream;
+}
+
 std::unique_ptr< boost::filesystem::ofstream > createOrLoadNewFileStream( const boost::filesystem::path& filePath )
 {
     ensureFoldersExist( filePath );

@@ -51,6 +51,8 @@ void ensureFoldersExist( const boost::filesystem::path& filePath );
 
 std::unique_ptr< boost::filesystem::ofstream > createNewFileStream( const boost::filesystem::path& filePath );
 
+std::unique_ptr< boost::filesystem::ifstream > loadFileStream( const boost::filesystem::path& filePath );
+
 std::unique_ptr< boost::filesystem::ofstream > createOrLoadNewFileStream( const boost::filesystem::path& filePath );
 
 std::unique_ptr< boost::filesystem::ofstream > createBinaryOutputFileStream( const boost::filesystem::path& filePath );
