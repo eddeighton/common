@@ -122,7 +122,7 @@ void Progress::setState( Status::State state )
         case Status::eFailed    :
             m_status.m_elapsed = getElapsedTime();
             m_timer.stop();
-            //m_fifo.push( m_status );
+            // m_fifo.push( m_status );
             break;
         default:
             THROW_RTE( "Unknown task state" );

@@ -167,7 +167,7 @@ std::unique_ptr< boost::filesystem::ofstream > createNewFileStream( const boost:
 std::unique_ptr< boost::filesystem::ifstream > loadFileStream( const boost::filesystem::path& filePath )
 {
     std::unique_ptr< boost::filesystem::ifstream > pFileStream(
-        new boost::filesystem::ifstream( filePath, std::ios_base::out ) );
+        new boost::filesystem::ifstream( filePath, std::ios_base::in ) );
     if ( !pFileStream->good() )
     {
         THROW_RTE( "Failed to open file: " << filePath.string() );
