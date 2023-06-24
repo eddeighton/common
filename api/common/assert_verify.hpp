@@ -64,12 +64,12 @@ Copyright Deighton Systems Limited (c) 2015
                                      throw exceptionType( _os2.str() ); )
 
 #define ASSERT_MSG( expr, msg ) \
-    DO_STUFF_AND_REQUIRE_SEMI_COLON( if ( !( expr ) ) { THROW( std::runtime_error, #expr << "\n\n" << msg ); } )
+    DO_STUFF_AND_REQUIRE_SEMI_COLON( if( !( expr ) ) { THROW( std::runtime_error, #expr << "\n\n" << msg ); } )
 
 #define ASSERT( expr ) ASSERT_MSG( expr, "" )
 
 #define TERMINATE_IF_NOT( expression, msg )                                             \
-    DO_STUFF_AND_REQUIRE_SEMI_COLON( if ( !( expression ) ) {                           \
+    DO_STUFF_AND_REQUIRE_SEMI_COLON( if( !( expression ) ) {                            \
         DEBUG_BREAK( _CRT_ERROR, "Verify of: " << #expression << " failed.\n" << msg ); \
         std::terminate();                                                               \
     } )
@@ -90,7 +90,7 @@ Copyright Deighton Systems Limited (c) 2015
     DO_STUFF_AND_REQUIRE_SEMI_COLON( std::ostringstream _os2; _os2 << msg; throw exceptionType( _os2.str() ); )
 
 #define TERMINATE_IF_NOT( expression, msg ) \
-    DO_STUFF_AND_REQUIRE_SEMI_COLON( if ( !( expression ) ) { std::terminate(); } )
+    DO_STUFF_AND_REQUIRE_SEMI_COLON( if( !( expression ) ) { std::terminate(); } )
 
 #endif //_DEBUG
 
@@ -98,7 +98,7 @@ Copyright Deighton Systems Limited (c) 2015
 #define THROW_TODO THROW( std::runtime_error, "TODO - this is not done yet!" )
 
 #define VERIFY( expression, exceptionType, msg ) \
-    DO_STUFF_AND_REQUIRE_SEMI_COLON( if ( !( expression ) ) { THROW( exceptionType, msg ); } )
+    DO_STUFF_AND_REQUIRE_SEMI_COLON( if( !( expression ) ) { THROW( exceptionType, msg ); } )
 
 #define VERIFY_RTE_MSG( expression, msg ) VERIFY( expression, std::runtime_error, msg )
 #define VERIFY_RTE( expression ) VERIFY( expression, std::runtime_error, "" )

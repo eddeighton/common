@@ -25,6 +25,11 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
+ELSE( ${WIN32} )
+
+add_compile_options("-Wshadow")
+add_compile_options("-Wfatal-errors")
+
 ENDIF( ${WIN32} )
 
 #setup some common directories from the root of the project

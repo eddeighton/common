@@ -9,6 +9,7 @@ include( ${WORKSPACE_ROOT_PATH}/thirdparty/gtest/gtest_include.cmake )
 set( COMMON_TEST_DIR ${COMMON_ROOT_DIR}/tests )
 
 set( COMMON_UNIT_TESTS
+	 ${COMMON_TEST_DIR}/astar_tests.cpp
 	 ${COMMON_TEST_DIR}/angle_tests.cpp
 	 ${COMMON_TEST_DIR}/file_tests.cpp
 	 ${COMMON_TEST_DIR}/grammar_tests.cpp

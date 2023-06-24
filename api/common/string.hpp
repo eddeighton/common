@@ -10,7 +10,7 @@ namespace common
 {
 
     template< class Iter >
-    void delimit( Iter pBegin, Iter pEnd, const std::string& delimiter, std::ostream& os )
+    inline void delimit( Iter pBegin, Iter pEnd, const std::string& delimiter, std::ostream& os )
     {
         for( Iter p = pBegin, pNext = pBegin; p!=pEnd; ++p )
         {
