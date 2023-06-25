@@ -224,7 +224,7 @@ void eraseAllSecond( CONT< T1, T2 >& data, const T2& v )
 template<typename T1, typename T2, typename Functor,
         template<typename T1_, typename T2_, typename Traits = std::less< T1_ >,
             typename Allocator = std::allocator< std::pair< const T1_, T2_ > > > class CONT >
-void for_each_second( CONT< T1, T2 >& data, const Functor& functor )
+void for_each_second( CONT< T1, T2 >& data, Functor&& functor )
 {
     for( typename CONT< T1, T2 >::iterator i = data.begin(),
         iEnd = data.end(); i!=iEnd; ++i )
@@ -234,7 +234,7 @@ void for_each_second( CONT< T1, T2 >& data, const Functor& functor )
 template<typename T1, typename T2, typename Functor,
         template<typename T1_, typename T2_, typename Traits = std::less< T1_ >,
             typename Allocator = std::allocator< std::pair< const T1_, T2_ > > > class CONT >
-void for_each_second( const CONT< T1, T2 >& data, const Functor& functor )
+void for_each_second( const CONT< T1, T2 >& data, Functor&& functor )
 {
     for( typename CONT< T1, T2 >::const_iterator i = data.begin(),
         iEnd = data.end(); i!=iEnd; ++i )

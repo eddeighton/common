@@ -116,22 +116,22 @@ inline bool astar_impl( typename Traits::Value start, typename Traits::Value goa
 }
 } // namespace detail
 
-template < typename ValueType >
+struct BasicCostEstimate
+{
+    float cost;
+    float estimate;
+
+    inline bool operator<( const BasicCostEstimate& cmp ) const
+    {
+        return ( cost + estimate ) < ( cmp.cost + cmp.estimate );
+    }
+};
+
+template < typename ValueType, typename CostEstimateType = BasicCostEstimate >
 struct AStarTraits
 {
-    using Value = ValueType;
-
-    struct CostEstimate
-    {
-        float cost;
-        float estimate;
-
-        inline bool operator<( const CostEstimate& cmp ) const
-        {
-            return ( cost + estimate ) < ( cmp.cost + cmp.estimate );
-        }
-    };
-
+    using Value              = ValueType;
+    using CostEstimate       = CostEstimateType;
     using ValueVector        = std::vector< Value >;
     using ValuePriorityQueue = std::multimap< CostEstimate, Value >;
     using ValueMap           = std::unordered_map< Value, typename ValuePriorityQueue::iterator, typename Value::Hash >;
@@ -139,27 +139,30 @@ struct AStarTraits
     using PredecessorMap     = std::unordered_map< Value, Value, typename Value::Hash >;
 };
 
-struct Value
+struct BasicValue
 {
     int x, y;
 
-    inline bool operator<=( const Value& value ) const { return ( x != value.x ) ? ( x < value.x ) : ( y < value.y ); }
-    inline bool operator==( const Value& value ) const { return ( x == value.x ) && ( y == value.y ); }
+    inline bool operator<=( const BasicValue& value ) const
+    {
+        return ( x != value.x ) ? ( x < value.x ) : ( y < value.y );
+    }
+    inline bool operator==( const BasicValue& value ) const { return ( x == value.x ) && ( y == value.y ); }
 
     struct Hash
     {
-        inline std::size_t operator()( const Value& value ) const { return value.x + value.y; }
+        inline std::size_t operator()( const BasicValue& value ) const { return value.x + value.y; }
     };
 };
 
-inline std::ostream& operator<<( std::ostream& os, const Value& value )
+inline std::ostream& operator<<( std::ostream& os, const BasicValue& value )
 {
     return os << '(' << value.x << ',' << value.y << ')';
 }
 
-using Traits = AStarTraits< Value >;
+using BasicTraits = AStarTraits< BasicValue >;
 
-template < typename ValuePredicate >
+template < typename Traits, typename ValuePredicate >
 struct Adjacency
 {
     using Angle = Math::Angle< 8 >;
@@ -170,16 +173,15 @@ struct Adjacency
     {
     }
 
-    // Value
-    inline const std::vector< Value >& operator()( const Value& value )
+    inline const std::vector< typename Traits::Value >& operator()( const typename Traits::Value& value )
     {
-        static std::vector< Value > values;
+        static std::vector< typename Traits::Value > values;
         values.clear();
         for( int i = 0; i != Angle::TOTAL_ANGLES; ++i )
         {
             int x = 0, y = 0;
             Math::toVectorDiscrete( static_cast< Angle::Value >( i ), x, y );
-            Value adjacentValue{ value.x + x, value.y + y };
+            typename Traits::Value adjacentValue{ value.x + x, value.y + y };
             if( m_predicate( adjacentValue ) )
             {
                 values.emplace_back( adjacentValue );
@@ -189,27 +191,51 @@ struct Adjacency
     }
 };
 
+// Simple astar search using basic traits and euclideon cost functions
 template < typename ValuePredicate >
-inline bool search( Value start, Value goal, ValuePredicate&& predicate, Traits::PredecessorMap& result )
+inline bool search( BasicTraits::Value start, BasicTraits::Value goal, ValuePredicate&& predicate,
+                    BasicTraits::PredecessorMap& result )
 {
-    Adjacency< ValuePredicate > adjacency( std::move( predicate ) );
+    Adjacency< BasicTraits, ValuePredicate > adjacency( std::move( predicate ) );
 
-    return detail::astar_impl< Traits >(
+    return detail::astar_impl< BasicTraits >(
         start, goal, result, adjacency,
         // Cost
-        []( const Value& value, const Value& previous, const Traits::CostEstimate& previousCostEstimate ) -> float
+        []( const BasicTraits::Value& value, const BasicTraits::Value& previous,
+            const typename BasicTraits::CostEstimate& previousCostEstimate ) -> float
         {
             const int x = abs( value.x - previous.x );
             const int y = abs( value.y - previous.y );
             return previousCostEstimate.cost + std::sqrt( x * x + y * y );
         },
         // Estimate
-        [ &goal ]( const Value& value ) -> float
+        [ &goal ]( const BasicTraits::Value& value ) -> float
         {
             const int x = abs( goal.x - value.x );
             const int y = abs( goal.y - value.y );
             return std::sqrt( x * x + y * y );
         } );
+}
+
+// SImple astar search using basic traits with custom cost functions
+template < typename ValuePredicate, typename CostFunctor, typename EstimateFunctor >
+inline bool search( typename BasicTraits::Value start, typename BasicTraits::Value goal, ValuePredicate&& predicate,
+                    CostFunctor&& costFunctor, EstimateFunctor&& estimateFunctor,
+                    typename BasicTraits::PredecessorMap& result )
+{
+    Adjacency< BasicTraits, ValuePredicate > adjacency( std::move( predicate ) );
+    return detail::astar_impl< BasicTraits >(
+        start, goal, result, adjacency, std::move( costFunctor ), std::move( estimateFunctor ) );
+}
+
+// Non-SImple astar search using custom traits with custom cost functions
+template < typename Traits, typename AdjacencyFunctor, typename CostFunctor, typename EstimateFunctor >
+inline bool search( typename Traits::Value start, typename Traits::Value goal, AdjacencyFunctor&& adjacency,
+                    CostFunctor&& costFunctor, EstimateFunctor&& estimateFunctor,
+                    typename Traits::PredecessorMap& result )
+{
+    return detail::astar_impl< Traits >(
+        start, goal, result, adjacency, std::move( costFunctor ), std::move( estimateFunctor ) );
 }
 
 } // namespace astar

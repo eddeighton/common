@@ -10,24 +10,22 @@ using namespace Math;
 
 TEST( AStar, Basic )
 {
-    astar::Value vStart{ 0, 0 };
-    astar::Value vGoal{ 10, 10 };
+    astar::BasicValue vStart{ 0, 0 };
+    astar::BasicValue vGoal{ 10, 10 };
 
-    astar::Traits::PredecessorMap result;
+    astar::BasicTraits::PredecessorMap result;
 
     bool bResult = astar::search(
-        vStart, vGoal, []( const astar::Value& value ) { return true; }, result );
+        vStart, vGoal, []( const astar::BasicValue& value ) { return true; }, result );
     ASSERT_TRUE( bResult );
 
-    astar::Value v = vGoal;
+    astar::BasicValue v = vGoal;
     while( v != vStart )
     {
         auto iFind = result.find( v );
         ASSERT_TRUE( iFind != result.end() );
-        astar::Value expected{ v.x - 1, v.y - 1 };
+        astar::BasicValue expected{ v.x - 1, v.y - 1 };
         ASSERT_EQ( iFind->second, expected );
         v = iFind->second;
     }
 }
-
-

@@ -89,6 +89,23 @@ inline typename TAngleTraits::Value opposite( typename TAngleTraits::Value v )
 }
 
 template < class TAngleTraits >
+inline char difference( typename TAngleTraits::Value v1, typename TAngleTraits::Value v2 )
+{
+    if( v1 < v2 )
+    {
+        return std::min( v1 + TAngleTraits::TOTAL_ANGLES - v2, v2 - v1 );
+    }
+    else if( v2 < v1 )
+    {
+        return std::min( v2 + TAngleTraits::TOTAL_ANGLES - v1, v1 - v2 );
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+template < class TAngleTraits >
 inline double toRadians( typename TAngleTraits::Value v )
 {
     return ( v * MY_PI * 2.0f ) / TAngleTraits::TOTAL_ANGLES;
