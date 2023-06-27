@@ -35,13 +35,44 @@
 namespace astar
 {
 
+struct BasicCostEstimate
+{
+    float cost;
+    float estimate;
+
+    inline bool operator<( const BasicCostEstimate& cmp ) const
+    {
+        return ( cost + estimate ) < ( cmp.cost + cmp.estimate );
+    }
+};
+
+struct BasicPolicies
+{
+    static constexpr bool TerminateEarly = false;
+};
+
+template < typename ValueType, typename Policies = BasicPolicies, typename CostEstimateType = BasicCostEstimate >
+struct AStarTraits
+{
+    using Value              = ValueType;
+    using CostEstimate       = CostEstimateType;
+    using ValuePriorityQueue = std::multimap< CostEstimate, Value >;
+    using ValueMap           = std::unordered_map< Value, typename ValuePriorityQueue::iterator, typename Value::Hash >;
+    using CostMap            = std::unordered_map< Value, CostEstimate, typename Value::Hash >;
+    using PredecessorMap     = std::unordered_map< Value, Value, typename Value::Hash >;
+
+    static constexpr bool        TerminateEarly = Policies::TerminateEarly;
+    static constexpr std::size_t MaxIterations  = 10000;
+};
+
 namespace detail
 {
 
-template < typename Traits, typename AdjacencyFunctor, typename CostFunctor, typename EstimateFunctor >
-inline bool astar_impl( typename Traits::Value start, typename Traits::Value goal,
-                        typename Traits::PredecessorMap& result, AdjacencyFunctor&& adjacencyFunctor,
-                        CostFunctor&& costFunctor, EstimateFunctor&& estimateFunctor )
+template < typename Traits, typename GoalFunctor, typename AdjacencyFunctor, typename CostFunctor,
+           typename EstimateFunctor >
+inline bool astar_impl( typename Traits::Value start, typename Traits::PredecessorMap& result,
+                        GoalFunctor&& goalFunctor, AdjacencyFunctor&& adjacencyFunctor, CostFunctor&& costFunctor,
+                        EstimateFunctor&& estimateFunctor )
 {
     using CostEstimate = typename Traits::CostEstimate;
 
@@ -55,19 +86,28 @@ inline bool astar_impl( typename Traits::Value start, typename Traits::Value goa
         open.insert( { start, iter } );
     }
 
-    while( !queue.empty() )
+    int iterations = 0;
+    while( !queue.empty() && ( ++iterations < Traits::MaxIterations ) )
     {
         auto iFirst = queue.begin();
 
         const auto& bestValue = iFirst->second;
 
-        if( bestValue == goal )
+        if( goalFunctor( bestValue ) )
         {
             return true;
         }
 
-        for( auto a : adjacencyFunctor( bestValue ) )
+        for( const auto& a : adjacencyFunctor( bestValue ) )
         {
+            /*if constexpr( Traits::TerminateEarly )
+            {
+                if( a == goal )
+                {
+                    result[ a ] = bestValue;
+                    return true;
+                }
+            }*/
             const CostEstimate estimate{ costFunctor( a, bestValue, iFirst->first ), estimateFunctor( a ) };
 
             auto iFindOpen = open.find( a );
@@ -115,29 +155,6 @@ inline bool astar_impl( typename Traits::Value start, typename Traits::Value goa
     return false;
 }
 } // namespace detail
-
-struct BasicCostEstimate
-{
-    float cost;
-    float estimate;
-
-    inline bool operator<( const BasicCostEstimate& cmp ) const
-    {
-        return ( cost + estimate ) < ( cmp.cost + cmp.estimate );
-    }
-};
-
-template < typename ValueType, typename CostEstimateType = BasicCostEstimate >
-struct AStarTraits
-{
-    using Value              = ValueType;
-    using CostEstimate       = CostEstimateType;
-    using ValueVector        = std::vector< Value >;
-    using ValuePriorityQueue = std::multimap< CostEstimate, Value >;
-    using ValueMap           = std::unordered_map< Value, typename ValuePriorityQueue::iterator, typename Value::Hash >;
-    using CostMap            = std::unordered_map< Value, CostEstimate, typename Value::Hash >;
-    using PredecessorMap     = std::unordered_map< Value, Value, typename Value::Hash >;
-};
 
 struct BasicValue
 {
@@ -199,7 +216,7 @@ inline bool search( BasicTraits::Value start, BasicTraits::Value goal, ValuePred
     Adjacency< BasicTraits, ValuePredicate > adjacency( std::move( predicate ) );
 
     return detail::astar_impl< BasicTraits >(
-        start, goal, result, adjacency,
+        start, [ &goal ]( const BasicTraits::Value& best ) { return best == goal; }, result, adjacency,
         // Cost
         []( const BasicTraits::Value& value, const BasicTraits::Value& previous,
             const typename BasicTraits::CostEstimate& previousCostEstimate ) -> float
@@ -225,17 +242,19 @@ inline bool search( typename BasicTraits::Value start, typename BasicTraits::Val
 {
     Adjacency< BasicTraits, ValuePredicate > adjacency( std::move( predicate ) );
     return detail::astar_impl< BasicTraits >(
-        start, goal, result, adjacency, std::move( costFunctor ), std::move( estimateFunctor ) );
+        start, result, [ &goal ]( const BasicTraits::Value& best ) { return best == goal; }, std::move( adjacency ),
+        std::move( costFunctor ), std::move( estimateFunctor ) );
 }
 
 // Non-SImple astar search using custom traits with custom cost functions
-template < typename Traits, typename AdjacencyFunctor, typename CostFunctor, typename EstimateFunctor >
-inline bool search( typename Traits::Value start, typename Traits::Value goal, AdjacencyFunctor&& adjacency,
+template < typename Traits, typename GoalFunctor, typename AdjacencyFunctor, typename CostFunctor,
+           typename EstimateFunctor >
+inline bool search( typename Traits::Value start, GoalFunctor&& goalFunctor, AdjacencyFunctor&& adjacency,
                     CostFunctor&& costFunctor, EstimateFunctor&& estimateFunctor,
                     typename Traits::PredecessorMap& result )
 {
-    return detail::astar_impl< Traits >(
-        start, goal, result, adjacency, std::move( costFunctor ), std::move( estimateFunctor ) );
+    return detail::astar_impl< Traits >( start, result, std::move( goalFunctor ), std::move( adjacency ),
+                                         std::move( costFunctor ), std::move( estimateFunctor ) );
 }
 
 } // namespace astar
