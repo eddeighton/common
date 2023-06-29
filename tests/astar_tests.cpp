@@ -17,7 +17,7 @@ TEST( AStar, Basic )
 
     bool bResult = astar::search(
         vStart, vGoal, []( const astar::BasicValue& value ) { return true; }, result );
-    ASSERT_TRUE( bResult );
+    ASSERT_EQ( bResult, astar::eSuccess );
 
     astar::BasicValue v = vGoal;
     while( v != vStart )

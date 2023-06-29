@@ -49,6 +49,7 @@ struct BasicCostEstimate
 struct BasicPolicies
 {
     static constexpr bool TerminateEarly = false;
+    static constexpr int  MaxIterations  = 20000;
 };
 
 template < typename ValueType, typename Policies = BasicPolicies, typename CostEstimateType = BasicCostEstimate >
@@ -62,17 +63,39 @@ struct AStarTraits
     using PredecessorMap     = std::unordered_map< Value, Value, typename Value::Hash >;
 
     static constexpr bool        TerminateEarly = Policies::TerminateEarly;
-    static constexpr std::size_t MaxIterations  = 10000;
+    static constexpr std::size_t MaxIterations  = Policies::MaxIterations;
 };
+
+enum ErrorCode
+{
+    eSuccess,
+    eMaxIterations,
+    eNoSolution
+};
+
+inline std::ostream& operator<<( std::ostream& os, astar::ErrorCode ec )
+{
+    switch( ec )
+    {
+        case eSuccess:
+            return os << "AStar success";
+        case eMaxIterations:
+            return os << "AStar error: max iterations encountered";
+        case eNoSolution:
+            return os << "AStar error: could not find solution";
+        default:
+            return os << "AStar error: unknown error";
+    }
+}
 
 namespace detail
 {
 
 template < typename Traits, typename GoalFunctor, typename AdjacencyFunctor, typename CostFunctor,
            typename EstimateFunctor >
-inline bool astar_impl( typename Traits::Value start, typename Traits::PredecessorMap& result,
-                        GoalFunctor&& goalFunctor, AdjacencyFunctor&& adjacencyFunctor, CostFunctor&& costFunctor,
-                        EstimateFunctor&& estimateFunctor )
+inline ErrorCode astar_impl( typename Traits::Value start, typename Traits::PredecessorMap& result,
+                             GoalFunctor&& goalFunctor, AdjacencyFunctor&& adjacencyFunctor, CostFunctor&& costFunctor,
+                             EstimateFunctor&& estimateFunctor )
 {
     using CostEstimate = typename Traits::CostEstimate;
 
@@ -87,15 +110,19 @@ inline bool astar_impl( typename Traits::Value start, typename Traits::Predecess
     }
 
     int iterations = 0;
-    while( !queue.empty() && ( ++iterations < Traits::MaxIterations ) )
+    while( !queue.empty() )
     {
+        if( ++iterations == Traits::MaxIterations )
+        {
+            return eMaxIterations;
+        }
         auto iFirst = queue.begin();
 
         const auto& bestValue = iFirst->second;
 
         if( goalFunctor( bestValue ) )
         {
-            return true;
+            return eSuccess;
         }
 
         for( const auto& a : adjacencyFunctor( bestValue ) )
@@ -152,7 +179,7 @@ inline bool astar_impl( typename Traits::Value start, typename Traits::Predecess
         queue.erase( iFirst );
     }
 
-    return false;
+    return eNoSolution;
 }
 } // namespace detail
 
@@ -210,13 +237,13 @@ struct Adjacency
 
 // Simple astar search using basic traits and euclideon cost functions
 template < typename ValuePredicate >
-inline bool search( BasicTraits::Value start, BasicTraits::Value goal, ValuePredicate&& predicate,
-                    BasicTraits::PredecessorMap& result )
+inline ErrorCode search( BasicTraits::Value start, BasicTraits::Value goal, ValuePredicate&& predicate,
+                         BasicTraits::PredecessorMap& result )
 {
     Adjacency< BasicTraits, ValuePredicate > adjacency( std::move( predicate ) );
 
     return detail::astar_impl< BasicTraits >(
-        start, [ &goal ]( const BasicTraits::Value& best ) { return best == goal; }, result, adjacency,
+        start, result, [ &goal ]( const BasicTraits::Value& best ) { return best == goal; }, adjacency,
         // Cost
         []( const BasicTraits::Value& value, const BasicTraits::Value& previous,
             const typename BasicTraits::CostEstimate& previousCostEstimate ) -> float
@@ -236,9 +263,9 @@ inline bool search( BasicTraits::Value start, BasicTraits::Value goal, ValuePred
 
 // SImple astar search using basic traits with custom cost functions
 template < typename ValuePredicate, typename CostFunctor, typename EstimateFunctor >
-inline bool search( typename BasicTraits::Value start, typename BasicTraits::Value goal, ValuePredicate&& predicate,
-                    CostFunctor&& costFunctor, EstimateFunctor&& estimateFunctor,
-                    typename BasicTraits::PredecessorMap& result )
+inline ErrorCode search( typename BasicTraits::Value start, typename BasicTraits::Value goal,
+                         ValuePredicate&& predicate, CostFunctor&& costFunctor, EstimateFunctor&& estimateFunctor,
+                         typename BasicTraits::PredecessorMap& result )
 {
     Adjacency< BasicTraits, ValuePredicate > adjacency( std::move( predicate ) );
     return detail::astar_impl< BasicTraits >(
@@ -249,9 +276,9 @@ inline bool search( typename BasicTraits::Value start, typename BasicTraits::Val
 // Non-SImple astar search using custom traits with custom cost functions
 template < typename Traits, typename GoalFunctor, typename AdjacencyFunctor, typename CostFunctor,
            typename EstimateFunctor >
-inline bool search( typename Traits::Value start, GoalFunctor&& goalFunctor, AdjacencyFunctor&& adjacency,
-                    CostFunctor&& costFunctor, EstimateFunctor&& estimateFunctor,
-                    typename Traits::PredecessorMap& result )
+inline ErrorCode search( typename Traits::Value start, GoalFunctor&& goalFunctor, AdjacencyFunctor&& adjacency,
+                         CostFunctor&& costFunctor, EstimateFunctor&& estimateFunctor,
+                         typename Traits::PredecessorMap& result )
 {
     return detail::astar_impl< Traits >( start, result, std::move( goalFunctor ), std::move( adjacency ),
                                          std::move( costFunctor ), std::move( estimateFunctor ) );
