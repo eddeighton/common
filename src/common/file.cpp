@@ -22,14 +22,14 @@ namespace filesystem
 boost::filesystem::path edsCannonicalise( const boost::filesystem::path& path )
 {
     std::list< std::string > components, result;
-    for ( boost::filesystem::path::const_iterator i = path.begin(), iEnd = path.end(); i != iEnd; ++i )
+    for( boost::filesystem::path::const_iterator i = path.begin(), iEnd = path.end(); i != iEnd; ++i )
         components.push_back( ( *i ).generic_string() );
 
-    for ( std::list< std::string >::const_iterator i = components.begin(), iEnd = components.end(); i != iEnd; ++i )
+    for( std::list< std::string >::const_iterator i = components.begin(), iEnd = components.end(); i != iEnd; ++i )
     {
-        if ( *i == "." )
+        if( *i == "." )
             continue;
-        else if ( *i == ".." )
+        else if( *i == ".." )
         {
             VERIFY_RTE_MSG( !result.empty(), "Invalid path: " << path );
             VERIFY_RTE_MSG( result.back().find( ':' ) == std::string::npos, "Invalid path: " << path );
@@ -41,7 +41,7 @@ boost::filesystem::path edsCannonicalise( const boost::filesystem::path& path )
     }
 
     boost::filesystem::path pResult;
-    for ( std::list< std::string >::const_iterator i = result.begin(), iEnd = result.end(); i != iEnd; ++i )
+    for( std::list< std::string >::const_iterator i = result.begin(), iEnd = result.end(); i != iEnd; ++i )
         pResult /= *i;
 
     return pResult;
@@ -59,12 +59,12 @@ boost::filesystem::path edsInclude( const boost::filesystem::path& fileOrFolder,
     boost::filesystem::path::const_iterator i = fileOrFolder.begin(), iEnd = fileOrFolder.end(), j = include.begin(),
                                             jEnd = include.end();
     // so iterate until they become different
-    for ( ; i != iEnd && j != jEnd && *i == *j; ++i, ++j )
+    for( ; i != iEnd && j != jEnd && *i == *j; ++i, ++j )
     {
     }
 
     bool bIsRegularFile = false;
-    if ( boost::filesystem::exists( fileOrFolder ) )
+    if( boost::filesystem::exists( fileOrFolder ) )
     {
         bIsRegularFile = boost::filesystem::is_regular_file( fileOrFolder );
     }
@@ -75,13 +75,13 @@ boost::filesystem::path edsInclude( const boost::filesystem::path& fileOrFolder,
     }
 
     // then for the remaining parts of the file path append ../ to the result path
-    for ( ; i != iEnd; )
+    for( ; i != iEnd; )
     {
         ++i;
 
-        if ( bIsRegularFile )
+        if( bIsRegularFile )
         {
-            if ( i == iEnd )
+            if( i == iEnd )
             {
                 break;
             }
@@ -92,7 +92,7 @@ boost::filesystem::path edsInclude( const boost::filesystem::path& fileOrFolder,
 
     // finally append the remaining part of the include path such that
     // now the result is a relative path from the file to the include path
-    for ( ; j != jEnd; ++j )
+    for( ; j != jEnd; ++j )
         pResult /= *j;
 
     return pResult;
@@ -101,13 +101,13 @@ boost::filesystem::path edsInclude( const boost::filesystem::path& fileOrFolder,
 void loadAsciiFile( const boost::filesystem::path& filePath, std::string& strFileData, bool bAddCR /*= true*/ )
 {
     std::ifstream inputFileStream( filePath.native().c_str(), std::ios::in );
-    if ( !inputFileStream.good() )
+    if( !inputFileStream.good() )
     {
         THROW_RTE( "Failed to open file: " << filePath.string() );
     }
     std::string fileContents(
         ( std::istreambuf_iterator< char >( inputFileStream ) ), std::istreambuf_iterator< char >() );
-    if ( bAddCR )
+    if( bAddCR )
         fileContents.push_back( '\n' ); // add carriage return onto end just in case...
     strFileData.swap( fileContents );
 }
@@ -115,21 +115,21 @@ void loadAsciiFile( const boost::filesystem::path& filePath, std::string& strFil
 void loadAsciiFile( const boost::filesystem::path& filePath, std::ostream& osFileData, bool bAddCR /*= true*/ )
 {
     std::ifstream inputFileStream( filePath.native().c_str(), std::ios::in );
-    if ( !inputFileStream.good() )
+    if( !inputFileStream.good() )
     {
         THROW_RTE( "Failed to open file: " << filePath.string() );
     }
     using StreamIter = std::istreambuf_iterator< char >;
     StreamIter iter( inputFileStream ), iterEnd;
     std::copy( iter, iterEnd, std::ostream_iterator< char >( osFileData, "" ) );
-    if ( bAddCR )
+    if( bAddCR )
         osFileData << '\n';
 }
 
 void loadBinaryFile( const boost::filesystem::path& filePath, std::string& strFileData )
 {
     std::ifstream inputFileStream( filePath.native().c_str(), std::ios::in | std::ios_base::binary );
-    if ( !inputFileStream.good() )
+    if( !inputFileStream.good() )
     {
         THROW_RTE( "Failed to open file: " << filePath.string() );
     }
@@ -142,9 +142,9 @@ void ensureFoldersExist( const boost::filesystem::path& filePath )
 {
     // ensure the parent path exists
     boost::filesystem::path parentPath = filePath.parent_path();
-    if ( !parentPath.empty() && !exists( parentPath ) && !create_directories( parentPath ) )
+    if( !parentPath.empty() && !exists( parentPath ) && !create_directories( parentPath ) )
     {
-        if ( !exists( parentPath ) )
+        if( !exists( parentPath ) )
         {
             THROW_RTE( "Failed to create directories for: " << filePath.string() );
         }
@@ -156,7 +156,7 @@ std::unique_ptr< boost::filesystem::ofstream > createNewFileStream( const boost:
     ensureFoldersExist( filePath );
     std::unique_ptr< boost::filesystem::ofstream > pFileStream(
         new boost::filesystem::ofstream( filePath, std::ios_base::trunc | std::ios_base::out ) );
-    if ( !pFileStream->good() )
+    if( !pFileStream->good() )
     {
         THROW_RTE( "Failed to create file: " << filePath.string() );
     }
@@ -168,7 +168,7 @@ std::unique_ptr< boost::filesystem::ifstream > loadFileStream( const boost::file
 {
     std::unique_ptr< boost::filesystem::ifstream > pFileStream(
         new boost::filesystem::ifstream( filePath, std::ios_base::in ) );
-    if ( !pFileStream->good() )
+    if( !pFileStream->good() )
     {
         THROW_RTE( "Failed to open file: " << filePath.string() );
     }
@@ -181,7 +181,7 @@ std::unique_ptr< boost::filesystem::ofstream > createOrLoadNewFileStream( const 
     ensureFoldersExist( filePath );
     std::unique_ptr< boost::filesystem::ofstream > pFileStream(
         new boost::filesystem::ofstream( filePath, std::ios_base::out | std::ios_base::app ) );
-    if ( !pFileStream->good() )
+    if( !pFileStream->good() )
     {
         THROW_RTE( "Failed to create file: " << filePath.string() );
     }
@@ -194,7 +194,7 @@ std::unique_ptr< boost::filesystem::ofstream > createBinaryOutputFileStream( con
     boost::filesystem::ensureFoldersExist( filePath );
     std::unique_ptr< boost::filesystem::ofstream > pFileStream( new boost::filesystem::ofstream(
         filePath, std::ios_base::trunc | std::ios_base::out | std::ios_base::binary ) );
-    if ( !pFileStream->good() )
+    if( !pFileStream->good() )
     {
         THROW_RTE( "Failed to create file: " << filePath.string() );
     }
@@ -206,7 +206,7 @@ std::unique_ptr< boost::filesystem::ifstream > createBinaryInputFileStream( cons
 {
     std::unique_ptr< boost::filesystem::ifstream > pFileStream(
         new boost::filesystem::ifstream( filePath, std::ios_base::in | std::ios_base::binary ) );
-    if ( !pFileStream->good() )
+    if( !pFileStream->good() )
     {
         THROW_RTE( "Failed to load file: " << filePath.string() );
     }
@@ -215,24 +215,49 @@ std::unique_ptr< boost::filesystem::ifstream > createBinaryInputFileStream( cons
 
 bool updateFileIfChanged( const boost::filesystem::path& filePath, const std::string& strContents )
 {
-    bool bUpdateFile = true;
-    if ( boost::filesystem::exists( filePath ) )
+    // special case where file is empty
+    if( strContents.empty() )
     {
-        // boost::iostreams::mapped_file::readonly
-        boost::iostreams::mapped_file_source originalPreProcFile( filePath );
-        if ( originalPreProcFile.size() == strContents.size()
-             && std::equal( originalPreProcFile.data(),
-                            originalPreProcFile.data() + originalPreProcFile.size(),
-                            strContents.data() ) )
+        if( boost::filesystem::file_size( filePath ) > 0 )
         {
-            bUpdateFile = false;
+            boost::filesystem::resize_file( filePath, 0U );
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 
-    if ( bUpdateFile )
+    bool bUpdateFile = true;
+    // NOTE: Avoid attempting to memory map empty files
+    if( boost::filesystem::exists( filePath ) && ( boost::filesystem::file_size( filePath ) > 0 ) )
     {
-        std::unique_ptr< boost::filesystem::ofstream > pFileStream = 
-            boost::filesystem::createBinaryOutputFileStream( filePath );
+        try
+        {
+            boost::iostreams::mapped_file_source originalPreProcFile( filePath );
+            if( originalPreProcFile.size() == strContents.size()
+                && std::equal( originalPreProcFile.data(),
+                               originalPreProcFile.data() + originalPreProcFile.size(),
+                               strContents.data() ) )
+            {
+                bUpdateFile = false;
+            }
+        }
+        catch( boost::exception& ex )
+        {
+            THROW_RTE( "Error mapping file: " << filePath.string() << " unknown boost exception" );
+        }
+        catch( std::exception& ex )
+        {
+            THROW_RTE( "Error mapping file: " << filePath.string() << " exception: " << ex.what() );
+        }
+    }
+
+    if( bUpdateFile )
+    {
+        std::unique_ptr< boost::filesystem::ofstream > pFileStream
+            = boost::filesystem::createBinaryOutputFileStream( filePath );
         *pFileStream << strContents;
     }
 
@@ -241,12 +266,25 @@ bool updateFileIfChanged( const boost::filesystem::path& filePath, const std::st
 
 bool compareFiles( const boost::filesystem::path& fileOne, const boost::filesystem::path& fileTwo )
 {
-    boost::iostreams::mapped_file_source originalPreProcFile( fileOne );
-    boost::iostreams::mapped_file_source newPreProcFile( fileTwo );
-    return originalPreProcFile.size() == newPreProcFile.size()
-           && std::equal( originalPreProcFile.data(),
-                          originalPreProcFile.data() + originalPreProcFile.size(),
-                          newPreProcFile.data() );
+    VERIFY_RTE_MSG( boost::filesystem::exists( fileOne ), "Cannot find file: " << fileOne.string() );
+    VERIFY_RTE_MSG( boost::filesystem::exists( fileTwo ), "Cannot find file: " << fileTwo.string() );
+
+    const auto fileOneSize = boost::filesystem::file_size( fileOne );
+    const auto fileTwoSize = boost::filesystem::file_size( fileTwo );
+
+    if( ( fileOneSize > 0 ) && ( fileTwoSize > 0 ) )
+    {
+        boost::iostreams::mapped_file_source originalPreProcFile( fileOne );
+        boost::iostreams::mapped_file_source newPreProcFile( fileTwo );
+        return originalPreProcFile.size() == newPreProcFile.size()
+               && std::equal( originalPreProcFile.data(),
+                              originalPreProcFile.data() + originalPreProcFile.size(),
+                              newPreProcFile.data() );
+    }
+    else
+    {
+        return fileOneSize == fileTwoSize;
+    }
 }
 
 } // namespace filesystem
