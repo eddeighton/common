@@ -53,24 +53,24 @@ Copyright Deighton Systems Limited (c) 2015
     DO_STUFF_AND_REQUIRE_SEMI_COLON(                                                                               \
         using ::operator<<; DEBUG_BREAK( _CRT_ERROR, msg ); std::ostringstream _os2; common::getBackTrace( _os2 ); \
         _os2 << common::COLOUR_RED_BEGIN << "PROCESS " << common::ProcessID::get() << " FILE " << __FILE__ << ":"  \
-             << __LINE__ << "\nMSG:" << msg << common::COLOUR_END;                                                 \
+             << __LINE__ << " MSG:" << msg << common::COLOUR_END;                                                 \
         throw exceptionType( _os2.str() ); )
 
 #define THROW( exceptionType, msg )                                                                               \
     DO_STUFF_AND_REQUIRE_SEMI_COLON( using ::operator<<; DEBUG_BREAK( _CRT_ERROR, msg ); std::ostringstream _os2; \
                                      _os2 << common::COLOUR_RED_BEGIN << "PROCESS " << common::ProcessID::get()   \
-                                          << " FILE " << __FILE__ << ":" << __LINE__ << "\nMSG:" << msg           \
+                                          << " FILE " << __FILE__ << ":" << __LINE__ << " MSG:" << msg           \
                                           << common::COLOUR_END;                                                  \
                                      throw exceptionType( _os2.str() ); )
 
 #define ASSERT_MSG( expr, msg ) \
-    DO_STUFF_AND_REQUIRE_SEMI_COLON( if( !( expr ) ) { THROW( std::runtime_error, #expr << "\n\n" << msg ); } )
+    DO_STUFF_AND_REQUIRE_SEMI_COLON( if( !( expr ) ) { THROW( std::runtime_error, #expr << " " << msg ); } )
 
 #define ASSERT( expr ) ASSERT_MSG( expr, "" )
 
 #define TERMINATE_IF_NOT( expression, msg )                                             \
     DO_STUFF_AND_REQUIRE_SEMI_COLON( if( !( expression ) ) {                            \
-        DEBUG_BREAK( _CRT_ERROR, "Verify of: " << #expression << " failed.\n" << msg ); \
+        DEBUG_BREAK( _CRT_ERROR, "Verify of: " << #expression << " failed." << msg ); \
         std::terminate();                                                               \
     } )
 
