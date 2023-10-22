@@ -272,19 +272,40 @@ bool compareFiles( const boost::filesystem::path& fileOne, const boost::filesyst
     const auto fileOneSize = boost::filesystem::file_size( fileOne );
     const auto fileTwoSize = boost::filesystem::file_size( fileTwo );
 
-    if( ( fileOneSize > 0 ) && ( fileTwoSize > 0 ) )
+    if( ( fileOneSize == 0 ) && ( fileTwoSize == 0 ) )
+        return true;
+
+    if( fileOneSize == fileTwoSize )
     {
         boost::iostreams::mapped_file_source originalPreProcFile( fileOne );
         boost::iostreams::mapped_file_source newPreProcFile( fileTwo );
-        return originalPreProcFile.size() == newPreProcFile.size()
+        return ( originalPreProcFile.size() == newPreProcFile.size() )
                && std::equal( originalPreProcFile.data(),
                               originalPreProcFile.data() + originalPreProcFile.size(),
                               newPreProcFile.data() );
     }
     else
     {
-        return fileOneSize == fileTwoSize;
+        return false;
     }
+}
+
+bool copyFileIfChanged( const boost::filesystem::path& from, const boost::filesystem::path& to )
+{
+    VERIFY_RTE_MSG( boost::filesystem::exists( from ), "Failed to locate file: " << from.string() );
+
+    if( boost::filesystem::exists( to ) )
+    {
+        // attempt to re-use existing file
+        if( compareFiles( from, to ) )
+        {
+            return false;
+        }
+        boost::filesystem::remove( to );
+    }
+    ensureFoldersExist( to );
+    boost::filesystem::copy( from, to );
+    return true;
 }
 
 } // namespace filesystem
