@@ -42,24 +42,24 @@ inline auto elapsed( std::chrono::steady_clock::time_point& last )
 template < typename T >
 inline std::string printDuration( const T& dur )
 {
-    #ifdef _WIN64
+#ifdef _WIN64
     using I64 = signed long long;
-    #else
+#else
     using I64 = signed long int;
-    #endif
+#endif
 
     std::ostringstream os;
     using DurationType = std::chrono::duration< I64, std::ratio< 1, 1'000'000'000 > >;
     auto c             = std::chrono::duration_cast< DurationType >( dur ).count();
-    auto sec           = ( c % 1'000'000'000'000 ) / 1'000'000'000;
+    auto sec           = c / 1'000'000'000;
     auto ms            = ( c % 1'000'000'000 ) / 1'000'000;
     auto us            = ( c % 1'000'000 ) / 1'000;
-    os << sec << "." << std::setw( 3 ) << std::setfill( '0' ) << ms << "ms." << std::setw( 3 ) << std::setfill( '0' )
-       << us << "us";
+    os << std::setfill( '0' ) << sec << "." << std::setw( 3 ) << std::setfill( '0' ) << ms << "ms." << std::setw( 3 )
+       << std::setfill( '0' ) << us << "us";
     return os.str();
 }
 
-template< typename T >
+template < typename T >
 inline std::string printTimeStamp( const T& timeStamp )
 {
     std::stringstream ss;
@@ -74,7 +74,6 @@ inline std::string printCurrentTime()
 {
     return printTimeStamp( std::chrono::system_clock::now() );
 }
-}
+} // namespace common
 
-#endif //COMMON_TIME_UTILS_22_OCT_2023
-
+#endif // COMMON_TIME_UTILS_22_OCT_2023

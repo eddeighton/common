@@ -40,13 +40,13 @@ TEST( ProcessTests, BasicOutput )
     std::string strOutput, strError;
 #ifdef _WIN32
     const int iExitCode = common::runProcess( "common_tests.exe --help", strOutput, strError );
-    ASSERT_EQ( iExitCode, 0 );
+    ASSERT_EQ( iExitCode, EXIT_SUCCESS );
     // remove \r
     strOutput.erase( std::remove(strOutput.begin(), strOutput.end(), '\r'), strOutput.end() );
     strError.erase( std::remove(strError.begin(), strError.end(), '\r'), strError.end() );
 #else
     const int iExitCode = common::runProcess( "common_tests --help", strOutput, strError );
-    ASSERT_EQ( iExitCode, 0 );
+    ASSERT_EQ( iExitCode, EXIT_SUCCESS );
 #endif
     ASSERT_EQ( expected, strOutput );
     ASSERT_EQ( "", strError );
@@ -58,13 +58,13 @@ TEST( ProcessTests, BasicError )
     
 #ifdef _WIN32
     const int iExitCode = common::runProcess( "common_tests.exe --foobar", strOutput, strError );
-    ASSERT_EQ( iExitCode, -1 );
+    ASSERT_EQ( iExitCode, EXIT_FAILURE );
     // remove \r
     strOutput.erase( std::remove(strOutput.begin(), strOutput.end(), '\r'), strOutput.end() );
     strError.erase( std::remove(strError.begin(), strError.end(), '\r'), strError.end() );
 #else
     const int iExitCode = common::runProcess( "common_tests --foobar", strOutput, strError );
-    ASSERT_EQ( iExitCode, -1 );
+    ASSERT_EQ( iExitCode, EXIT_FAILURE );
 #endif
     ASSERT_EQ( "", strOutput );
     ASSERT_EQ( "Exception calling main: unrecognised option '--foobar'\n", strError );

@@ -61,10 +61,10 @@ template < class Archive >
 inline void serialize( Archive& ar, boost::filesystem::path& p, const unsigned int version )
 {
     std::string s;
-    if( Archive::is_saving::value )
+    if constexpr( Archive::is_saving::value )
         s = p.generic_string();
     ar& boost::serialization::make_nvp( "filepath", s );
-    if( Archive::is_loading::value )
+    if constexpr( Archive::is_loading::value )
         p = s;
 }
 
@@ -72,7 +72,7 @@ template < class Archive >
 inline void serialize( Archive& ar, std::optional< boost::filesystem::path >& p, const unsigned int version )
 {
     std::string s;
-    if( Archive::is_saving::value )
+    if constexpr( Archive::is_saving::value )
     {
         if( p.has_value() )
             s = p.value().generic_string();
@@ -80,7 +80,7 @@ inline void serialize( Archive& ar, std::optional< boost::filesystem::path >& p,
             s = "";
     }
     ar& boost::serialization::make_nvp( "string", s );
-    if( Archive::is_loading::value )
+    if constexpr( Archive::is_loading::value )
     {
         if( s.empty() )
             p = std::optional< boost::filesystem::path >();
@@ -92,7 +92,7 @@ inline void serialize( Archive& ar, std::optional< boost::filesystem::path >& p,
 template < class Archive, class T >
 inline void serialize( Archive& ar, std::optional< T >& optionalValue, const unsigned int version )
 {
-    if( Archive::is_saving::value )
+    if constexpr( Archive::is_saving::value )
     {
         if( optionalValue.has_value() )
         {
@@ -107,7 +107,7 @@ inline void serialize( Archive& ar, std::optional< T >& optionalValue, const uns
         }
     }
 
-    if( Archive::is_loading::value )
+    if constexpr( Archive::is_loading::value )
     {
         bool bHasValue = false;
         ar&  bHasValue;

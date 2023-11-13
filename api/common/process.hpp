@@ -17,57 +17,29 @@
 //  NEGLIGENCE) OR STRICT LIABILITY, EVEN IF COPYRIGHT OWNERS ARE ADVISED
 //  OF THE POSSIBILITY OF SUCH DAMAGES.
 
-#pragma warning( push )
-#pragma warning( disable : 4996 ) // iterator thing
-#pragma warning( disable : 4244 ) // conversion to DWORD from system_clock::rep
-#include <boost/process.hpp>
-#pragma warning( pop )
-
-#include <boost/asio/io_service.hpp>
+#ifndef GUARD_2023_November_13_process
+#define GUARD_2023_November_13_process
 
 #include <string>
-#include <future>
-#include <sstream>
+#include <map>
 
 namespace common
 {
-    inline int runProcess( const std::string& strCmd, std::string& strOutput, std::string& strError )
-    {
-        namespace bp = boost::process;
-        
-        std::future< std::string > output, error;
-        
-        boost::asio::io_service ios;
 
-        bp::child c( strCmd,
-                bp::std_in.close(),
-                bp::std_out > output,
-                bp::std_err > error,
-                ios );
-        
-        ios.run();
+int runProcess( const std::string& strCmd, std::string& strOutput, std::string& strError );
 
-        strOutput   = output.get();
-        strError    = error.get();
-        
-#ifdef _WIN32
-        if( !strError.empty() )
-        {
-            return -1; //c.exit_code();
-        }
-        else
-        {
-            return 0;
-        }
-#else
-        if( !strError.empty() )
-        {
-            return -1; //c.exit_code();
-        }
-        else
-        {
-            return 0;
-        }
-#endif
-    }
-}
+struct Command
+{
+    using EnvironmentMap = std::map< std::string, std::string >;
+
+    std::string    m_strCmd;
+    EnvironmentMap m_environmentVars;
+
+    std::string str() const;
+};
+
+int runCmd( const Command& cmd, std::string& strOutput, std::string& strError );
+
+} // namespace common
+
+#endif //GUARD_2023_November_13_process
