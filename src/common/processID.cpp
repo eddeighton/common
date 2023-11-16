@@ -23,9 +23,9 @@ ProcessID ProcessID::get() { return ProcessID{ boost::this_process::get_id(), g_
 
 void ProcessID::setDescription( const char* pszDescToCopy ) { g_processDesc = pszDescToCopy; }
 
-} // namespace common
-
 std::ostream& operator<<( std::ostream& os, common::ProcessID processID )
 {
     return os << "PID: " << processID.getPID() << " " << processID.getDescription();
 }
+
+} // namespace common

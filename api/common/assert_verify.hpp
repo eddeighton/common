@@ -51,13 +51,13 @@ Copyright Deighton Systems Limited (c) 2015
 
 #define THROW_BACKTRACE( exceptionType, msg )                                                                      \
     DO_STUFF_AND_REQUIRE_SEMI_COLON(                                                                               \
-        using ::operator<<; DEBUG_BREAK( _CRT_ERROR, msg ); std::ostringstream _os2; common::getBackTrace( _os2 ); \
+        DEBUG_BREAK( _CRT_ERROR, msg ); std::ostringstream _os2; common::getBackTrace( _os2 ); \
         _os2 << common::COLOUR_RED_BEGIN << "PROCESS " << common::ProcessID::get() << " FILE " << __FILE__ << ":"  \
              << __LINE__ << " MSG:" << msg << common::COLOUR_END;                                                 \
         throw exceptionType( _os2.str() ); )
 
 #define THROW( exceptionType, msg )                                                                               \
-    DO_STUFF_AND_REQUIRE_SEMI_COLON( using ::operator<<; DEBUG_BREAK( _CRT_ERROR, msg ); std::ostringstream _os2; \
+    DO_STUFF_AND_REQUIRE_SEMI_COLON( DEBUG_BREAK( _CRT_ERROR, msg ); std::ostringstream _os2; \
                                      _os2 << common::COLOUR_RED_BEGIN << "PROCESS " << common::ProcessID::get()   \
                                           << " FILE " << __FILE__ << ":" << __LINE__ << " MSG:" << msg           \
                                           << common::COLOUR_END;                                                  \

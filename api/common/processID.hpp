@@ -22,9 +22,11 @@ private:
     int                m_pid = 0U;
     const std::string& m_description;
 };
-} // namespace common
 
 std::ostream& operator<<( std::ostream& os, common::ProcessID processID );
+
+} // namespace common
+
 
 #endif // PROCESSID_8_12_2016
 

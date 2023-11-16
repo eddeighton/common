@@ -100,8 +100,6 @@ struct SerializeIn< 1 >
     }
 };
 
-}
-
 template<typename... Args>
 inline std::ostream& operator<<( std::ostream& os, const std::tuple<Args...>& t )
 {
@@ -119,6 +117,9 @@ inline std::istream& operator>>( std::istream& is, std::tuple<Args...>& t )
     VERIFY_RTE( c == '(' );
     common::SerializeIn< sizeof...(Args) >::serialize( is, t );
     return is;
+}
+
+
 }
 
 #endif //TUPLE_UTILS_14_NOV_2015

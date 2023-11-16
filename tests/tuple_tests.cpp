@@ -7,6 +7,8 @@
 #include <limits>
 #include <cstdint>
 
+using namespace common;
+
 #define TupleComparison( TYPE, ...)                \
 do                                                 \
 {                                                  \

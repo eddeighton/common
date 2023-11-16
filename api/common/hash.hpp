@@ -193,8 +193,6 @@ public:
     }
 };
 
-} // namespace common
-
 inline std::ostream& operator<<( std::ostream& os, const common::Hash& hash ) { return os << hash.get(); }
 
 inline std::istream& operator>>( std::istream& is, common::Hash& hash )
@@ -204,5 +202,7 @@ inline std::istream& operator>>( std::istream& is, common::Hash& hash )
     hash.set( sz );
     return is;
 }
+
+} // namespace common
 
 #endif // COMMON_HASH_UTILS_28_OCT_2020
