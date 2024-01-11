@@ -7,6 +7,7 @@
 #include "boost/filesystem/path.hpp"
 
 #include <string>
+#include <array>
 #include <vector>
 #include <sstream>
 #include <iostream>
@@ -42,6 +43,13 @@ template < typename T >
 struct HashFunctor< T, typename std::enable_if< std::is_base_of< HashCode, T >::value >::type >
 {
     inline HashCodeType operator()( const T& value ) const { return value.m_data; }
+};
+
+template < typename T >
+struct HashFunctor< T, typename std::enable_if< !std::is_base_of< HashCode, T >::value
+                                                && std::is_default_constructible< typename T::Hash >::value >::type >
+{
+    inline HashCodeType operator()( const T& value ) const { return typename T::Hash{}( value ); }
 };
 
 HashCodeType hash_file( const boost::filesystem::path& file );
@@ -81,9 +89,23 @@ struct HashFunctor< char[ Length ] >
     inline HashCodeType operator()( const char str[ Length ] )
     {
         HashCodeType hashCode = 0x79e37b99;
-        for ( std::size_t sz = 0U; sz != Length; ++sz )
+        for( std::size_t sz = 0U; sz != Length; ++sz )
         {
             hashCode = HashCombiner()( hashCode, std::hash< char >{}( str[ sz ] ) );
+        }
+        return hashCode;
+    }
+};
+
+template < typename T, std::size_t Length >
+struct HashFunctor< std::array< T, Length > >
+{
+    inline HashCodeType operator()( const std::array< T, Length >& list ) const
+    {
+        HashCodeType hashCode = 0x79e47b99;
+        for( const auto& value : list )
+        {
+            hashCode = HashCombiner()( hashCode, HashFunctor< T >()( value ) );
         }
         return hashCode;
     }
@@ -94,8 +116,8 @@ struct HashFunctor< std::vector< T, std::allocator< T > > >
 {
     inline HashCodeType operator()( const std::vector< T, std::allocator< T > >& list ) const
     {
-        HashCodeType hashCode = 0x79e37b99;
-        for ( const auto& value : list )
+        HashCodeType hashCode = 0x79e57b99;
+        for( const auto& value : list )
         {
             hashCode = HashCombiner()( hashCode, HashFunctor< T >()( value ) );
         }
@@ -109,7 +131,7 @@ struct HashFunctor< std::initializer_list< T > >
     inline HashCodeType operator()( const std::initializer_list< T > list ) const
     {
         HashCodeType hashCode = 0x79e37b99;
-        for ( const auto& value : list )
+        for( const auto& value : list )
         {
             hashCode = HashCombiner()( hashCode, HashFunctor< T >()( value ) );
         }
@@ -137,7 +159,7 @@ class Hash : public internal::HashCode
 {
 public:
     Hash() {}
-    
+
     template < typename... Args >
     Hash( const Args&... args )
         : internal::HashCode( { internal::HashFunctorVariadic()( args... ) } )
@@ -183,8 +205,8 @@ public:
         {
             if( str.substr( 0, 2 ) == "0x" )
             {
-                HashCodeType result;
-                std::istringstream is( str.substr( 2, str.size() -2 ) );
+                HashCodeType       result;
+                std::istringstream is( str.substr( 2, str.size() - 2 ) );
                 is >> std::hex >> result;
                 return result;
             }
@@ -193,7 +215,10 @@ public:
     }
 };
 
-inline std::ostream& operator<<( std::ostream& os, const common::Hash& hash ) { return os << hash.get(); }
+inline std::ostream& operator<<( std::ostream& os, const common::Hash& hash )
+{
+    return os << hash.get();
+}
 
 inline std::istream& operator>>( std::istream& is, common::Hash& hash )
 {
