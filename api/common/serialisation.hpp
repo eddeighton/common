@@ -36,15 +36,16 @@
 #include <boost/serialization/unordered_set.hpp>
 #include <boost/serialization/bitset.hpp>
 #include <boost/serialization/utility.hpp>
-#include <boost/serialization/variant.hpp>
 
 #include <boost/filesystem/path.hpp>
-#include <boost/variant.hpp>
 
 #include <boost/dynamic_bitset.hpp>
 #include <boost/dynamic_bitset/serialization.hpp>
 
+#include "serialisation_variant.hpp"
+
 #include <optional>
+#include <variant>
 
 namespace boost::serialization
 {
