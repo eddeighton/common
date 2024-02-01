@@ -77,7 +77,7 @@ void save(
 }
 
 // Minimalist metaprogramming for handling parameter pack
-namespace mp {
+namespace _mp__ {
     namespace detail {
     template <typename Seq>
     struct front_impl;
@@ -104,7 +104,7 @@ namespace mp {
 
     template <typename Seq>
     using pop_front = typename detail::pop_front_impl<Seq>::type;
-}  // namespace mp
+}  // namespace _mp__
 
 template<std::size_t N, class Seq>
 struct variant_impl
@@ -121,7 +121,7 @@ struct variant_impl
             // necessary has to copy the value.  This wouldn't be necessary
             // with an implementation that de-serialized to the address of the
             // aligned storage included in the variant.
-            using type = mp::front<Seq>;
+            using type = _mp__::front<Seq>;
             type value;
             ar >> BOOST_SERIALIZATION_NVP(value);
             v = std::move(value);
@@ -130,7 +130,7 @@ struct variant_impl
             return;
         }
         //typedef typename mpl::pop_front<S>::type type;
-        using types = mp::pop_front<Seq>;
+        using types = _mp__::pop_front<Seq>;
         variant_impl<N - 1, types>::load(ar, which - 1, v, version);
     }
 };
@@ -162,7 +162,7 @@ void load(
                 boost::archive::archive_exception::unsupported_version
             )
         );
-    variant_impl<sizeof...(Types), mp::typelist<Types...>>::load(ar, which, v, version);
+    variant_impl<sizeof...(Types), _mp__::typelist<Types...>>::load(ar, which, v, version);
 }
 
 template<class Archive,class... Types>
