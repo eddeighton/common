@@ -1,11 +1,14 @@
 
 #include "common/process.hpp"
 
+#include "boost/filesystem.hpp"
+
 #include <gtest/gtest.h>
 
 #ifdef _WIN32
+static const std::string exeName = "common_tests.exe";
 static const std::string expected =
-R"EXPECTED(Allowed options:
+    R"EXPECTED(Allowed options:
   --help                produce help message
   --filter arg          filter string to select subset of tests
   --gtest_filter arg    filter string to select subset of tests
@@ -19,8 +22,9 @@ R"EXPECTED(Allowed options:
 
 )EXPECTED";
 #else
+static const std::string exeName = "common_tests";
 static const std::string expected =
-R"EXPECTED(Allowed options:
+    R"EXPECTED(Allowed options:
   --help                produce help message
   --filter arg          filter string to select subset of tests
   --gtest_filter arg    filter string to select subset of tests
@@ -34,18 +38,25 @@ R"EXPECTED(Allowed options:
 
 )EXPECTED";
 #endif
-              
+
 TEST( ProcessTests, BasicOutput )
 {
+    ASSERT_TRUE( boost::filesystem::exists( exeName ) )
+        << "Unit test could not find executable " << exeName << " - are you running from correct cwd?";
+
+    std::ostringstream osCmd;
+    osCmd << exeName << " --help";
+
     std::string strOutput, strError;
+
 #ifdef _WIN32
-    const int iExitCode = common::runProcess( "common_tests.exe --help", strOutput, strError );
+    const int iExitCode = common::runProcess( osCmd.str(), strOutput, strError );
     ASSERT_EQ( iExitCode, EXIT_SUCCESS );
     // remove \r
-    strOutput.erase( std::remove(strOutput.begin(), strOutput.end(), '\r'), strOutput.end() );
-    strError.erase( std::remove(strError.begin(), strError.end(), '\r'), strError.end() );
+    strOutput.erase( std::remove( strOutput.begin(), strOutput.end(), '\r' ), strOutput.end() );
+    strError.erase( std::remove( strError.begin(), strError.end(), '\r' ), strError.end() );
 #else
-    const int iExitCode = common::runProcess( "common_tests --help", strOutput, strError );
+    const int iExitCode = common::runProcess( osCmd.str(), strOutput, strError );
     ASSERT_EQ( iExitCode, EXIT_SUCCESS );
 #endif
     ASSERT_EQ( expected, strOutput );
@@ -54,16 +65,22 @@ TEST( ProcessTests, BasicOutput )
 
 TEST( ProcessTests, BasicError )
 {
+    ASSERT_TRUE( boost::filesystem::exists( exeName ) )
+        << "Unit test could not find executable " << exeName << " - are you running from correct cwd?";
+
+    std::ostringstream osCmd;
+    osCmd << exeName << " --foobar";
+
     std::string strOutput, strError;
-    
+
 #ifdef _WIN32
-    const int iExitCode = common::runProcess( "common_tests.exe --foobar", strOutput, strError );
+    const int iExitCode = common::runProcess( osCmd.str(), strOutput, strError );
     ASSERT_EQ( iExitCode, EXIT_FAILURE );
     // remove \r
-    strOutput.erase( std::remove(strOutput.begin(), strOutput.end(), '\r'), strOutput.end() );
-    strError.erase( std::remove(strError.begin(), strError.end(), '\r'), strError.end() );
+    strOutput.erase( std::remove( strOutput.begin(), strOutput.end(), '\r' ), strOutput.end() );
+    strError.erase( std::remove( strError.begin(), strError.end(), '\r' ), strError.end() );
 #else
-    const int iExitCode = common::runProcess( "common_tests --foobar", strOutput, strError );
+    const int iExitCode = common::runProcess( osCmd.str(), strOutput, strError );
     ASSERT_EQ( iExitCode, EXIT_FAILURE );
 #endif
     ASSERT_EQ( "", strOutput );
