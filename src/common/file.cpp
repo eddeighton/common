@@ -141,13 +141,20 @@ void loadBinaryFile( const boost::filesystem::path& filePath, std::string& strFi
 void ensureFoldersExist( const boost::filesystem::path& filePath )
 {
     // ensure the parent path exists
-    boost::filesystem::path parentPath = filePath.parent_path();
-    if( !parentPath.empty() && !exists( parentPath ) && !create_directories( parentPath ) )
+    if( filePath.has_parent_path() )
     {
-        if( !exists( parentPath ) )
+        boost::filesystem::path parentPath = filePath.parent_path();
+        if( !parentPath.empty() && !exists( parentPath ) && !create_directories( parentPath ) )
         {
-            THROW_RTE( "Failed to create directories for: " << filePath.string() );
+            if( !exists( parentPath ) )
+            {
+                THROW_RTE( "Failed to create directories for: " << filePath.string() );
+            }
         }
+    }
+    else
+    {
+        THROW_RTE( "Path has no parent path: " << filePath.string() );
     }
 }
 

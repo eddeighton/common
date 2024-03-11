@@ -27,7 +27,6 @@ set_target_properties( commonlib PROPERTIES FOLDER common )
 
 set_target_properties( commonlib PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON )
 
-
 set_property(TARGET commonlib PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 link_boost( commonlib filesystem )
