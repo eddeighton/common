@@ -38,6 +38,8 @@ std::string getGitFile( const boost::filesystem::path& gitDirectory,
                         const boost::filesystem::path& filePath,
                         const std::string&             strGitHash );
 
+void commit( const boost::filesystem::path& gitDirectory, const std::string& strMsg );
+
 } // namespace git
 
 #endif // GUARD_2024_March_11_git

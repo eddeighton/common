@@ -85,7 +85,7 @@ std::vector< std::string > getFileGitHashes( const boost::filesystem::path& gitD
     catch( std::exception& ex )
     {
         boost::filesystem::current_path( currentPath );
-        THROW_RTE( "Error performing git log command: " << ex.what() );
+        THROW_RTE( ex.what() );
     }
     boost::filesystem::current_path( currentPath );
 
@@ -125,10 +125,37 @@ std::string getGitFile( const boost::filesystem::path& gitDirectory,
     catch( std::exception& ex )
     {
         boost::filesystem::current_path( currentPath );
-        THROW_RTE( "Error performing git log command: " << ex.what() );
+        THROW_RTE( ex.what() );
     }
     boost::filesystem::current_path( currentPath );
 
     return strContents;
 }
+
+void commit( const boost::filesystem::path& gitDirectory, const std::string& strMsg )
+{
+    VERIFY_RTE( boost::filesystem::exists( gitDirectory ) );
+
+    const auto currentPath = boost::filesystem::current_path();
+    boost::filesystem::current_path( gitDirectory );
+    try
+    {
+        std::ostringstream os;
+        os << "git commit . -m \"" << strMsg << "\"";
+
+        std::string strOutput, strError;
+
+        const auto returnValue = common::runProcess( os.str(), strOutput, strError );
+
+        VERIFY_RTE_MSG(
+            ( returnValue == EXIT_SUCCESS ) && strError.empty(), "Error performing git commit command: " << strError );
+    }
+    catch( std::exception& ex )
+    {
+        boost::filesystem::current_path( currentPath );
+        THROW_RTE( ex.what() );
+    }
+    boost::filesystem::current_path( currentPath );
+}
+
 } // namespace git
