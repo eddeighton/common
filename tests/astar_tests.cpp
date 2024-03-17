@@ -16,7 +16,7 @@ TEST( AStar, Basic )
     astar::BasicTraits::PredecessorMap result;
 
     bool bResult = astar::search(
-        vStart, vGoal, []( const astar::BasicValue& value ) { return true; }, result );
+        vStart, vGoal, []( const astar::BasicValue& ) { return true; }, result );
     ASSERT_EQ( bResult, astar::eSuccess );
 
     astar::BasicValue v = vGoal;

@@ -252,7 +252,6 @@ TEST( DiscreteAngle, toVectorDiscrete_4_int )
 
 TEST( DiscreteAngle, fromVector_4_float )
 {
-    typedef std::pair< float, float > VectorType;
     typedef Angle< 4 >                A;
 
     ASSERT_EQ( ( A::eEast ), ( fromVector< A >( 1.0f, 0.0f ) ) );
@@ -262,7 +261,6 @@ TEST( DiscreteAngle, fromVector_4_float )
 }
 TEST( DiscreteAngle, fromVector_4_int )
 {
-    typedef std::pair< int, int > VectorType;
     typedef Angle< 4 >            A;
 
     ASSERT_EQ( ( A::eEast ), ( fromVector< A >( 1, 0 ) ) );
@@ -272,7 +270,6 @@ TEST( DiscreteAngle, fromVector_4_int )
 }
 TEST( DiscreteAngle, fromVector_8_float )
 {
-    typedef std::pair< float, float > VectorType;
     typedef Angle< 8 >                A;
 
     ASSERT_EQ( ( A::eEast ), ( fromVector< A >( 1.0f, 0.0f ) ) );
@@ -282,7 +279,6 @@ TEST( DiscreteAngle, fromVector_8_float )
 }
 TEST( DiscreteAngle, fromVector_8_int )
 {
-    typedef std::pair< int, int > VectorType;
     typedef Angle< 8 >            A;
 
     ASSERT_EQ( ( A::eEast ), ( fromVector< A >( 1, 0 ) ) );

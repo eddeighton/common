@@ -1,4 +1,5 @@
-//  Copyright (c) Deighton Systems Limited. 2019. All Rights Reserved.
+
+//  Copyright (c) Deighton Systems Limited. 2022. All Rights Reserved.
 //  Author: Edward Deighton
 //  License: Please see license.txt in the project root folder.
 
@@ -16,10 +17,6 @@
 //  EXPRESSLY DISCLAIMED, WHETHER ARISING IN CONTRACT, TORT (INCLUDING
 //  NEGLIGENCE) OR STRICT LIABILITY, EVEN IF COPYRIGHT OWNERS ARE ADVISED
 //  OF THE POSSIBILITY OF SUCH DAMAGES.
-
-/*
-Copyright Deighton Systems Limited (c) 2015
-*/
 
 #ifndef EDSASSERT_20_12_2012
 #define EDSASSERT_20_12_2012
@@ -39,28 +36,30 @@ Copyright Deighton Systems Limited (c) 2015
 
 #ifndef _CRT_ASSERT
 #define _CRT_ASSERT 0
+
 #endif
+
 #ifndef _CRT_ERROR
 #define _CRT_ERROR 0
+
 #endif
 
-#define DEBUG_BREAK( type, msg ) DO_NOTHING_BUT_REQUIRE_SEMI_COLON
-//#define DEBUG_BREAK( type, msg )                                                                                    \
-//    DO_STUFF_AND_REQUIRE_SEMI_COLON( std::ostringstream _os_x; common::getBackTrace( _os_x ); _os_x << msg << "\n"; \
-//                                     common::msvcr_debugAssert( type, __FILE__, __LINE__, BOOST_CURRENT_FUNCTION, _os_x.str().c_str() ); )
+// #define DEBUG_BREAK() DO_STUFF_AND_REQUIRE_SEMI_COLON( raise( SIGTRAP ); )
 
-#define THROW_BACKTRACE( exceptionType, msg )                                                                      \
-    DO_STUFF_AND_REQUIRE_SEMI_COLON(                                                                               \
-        DEBUG_BREAK( _CRT_ERROR, msg ); std::ostringstream _os2; common::getBackTrace( _os2 ); \
-        _os2 << common::COLOUR_RED_BEGIN << "PROCESS " << common::ProcessID::get() << " FILE " << __FILE__ << ":"  \
-             << __LINE__ << " MSG:" << msg << common::COLOUR_END;                                                 \
-        throw exceptionType( _os2.str() ); )
+#define DEBUG_BREAK() DO_NOTHING_BUT_REQUIRE_SEMI_COLON
 
-#define THROW( exceptionType, msg )                                                                               \
-    DO_STUFF_AND_REQUIRE_SEMI_COLON( DEBUG_BREAK( _CRT_ERROR, msg ); std::ostringstream _os2; \
-                                     _os2 << common::COLOUR_RED_BEGIN << "PROCESS " << common::ProcessID::get()   \
-                                          << " FILE " << __FILE__ << ":" << __LINE__ << " MSG:" << msg           \
-                                          << common::COLOUR_END;                                                  \
+#define THROW_BACKTRACE( exceptionType, msg )                                                                   \
+    DO_STUFF_AND_REQUIRE_SEMI_COLON( DEBUG_BREAK(); std::ostringstream _os2; common::getBackTrace( _os2 );      \
+                                     _os2 << common::COLOUR_RED_BEGIN << "PROCESS " << common::ProcessID::get() \
+                                          << " FILE " << __FILE__ << ":" << __LINE__ << " MSG:" << msg          \
+                                          << common::COLOUR_END;                                                \
+                                     throw exceptionType( _os2.str() ); )
+
+#define THROW( exceptionType, msg )                                                                             \
+    DO_STUFF_AND_REQUIRE_SEMI_COLON( DEBUG_BREAK(); std::ostringstream _os2;                                    \
+                                     _os2 << common::COLOUR_RED_BEGIN << "PROCESS " << common::ProcessID::get() \
+                                          << " FILE " << __FILE__ << ":" << __LINE__ << " MSG:" << msg          \
+                                          << common::COLOUR_END;                                                \
                                      throw exceptionType( _os2.str() ); )
 
 #define ASSERT_MSG( expr, msg ) \
@@ -68,10 +67,10 @@ Copyright Deighton Systems Limited (c) 2015
 
 #define ASSERT( expr ) ASSERT_MSG( expr, "" )
 
-#define TERMINATE_IF_NOT( expression, msg )                                             \
-    DO_STUFF_AND_REQUIRE_SEMI_COLON( if( !( expression ) ) {                            \
-        DEBUG_BREAK( _CRT_ERROR, "Verify of: " << #expression << " failed." << msg ); \
-        std::terminate();                                                               \
+#define TERMINATE_IF_NOT( expression, msg )                  \
+    DO_STUFF_AND_REQUIRE_SEMI_COLON( if( !( expression ) ) { \
+        DEBUG_BREAK();                                       \
+        std::terminate();                                    \
     } )
 
 #else // DEBUG

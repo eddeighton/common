@@ -220,7 +220,7 @@ Scheduler::Scheduler(
     VERIFY_RTE( nMaxThreads > 0U );
 
     boost::asio::io_context* pQueue = &m_queue;
-    for ( int i = 0; i < nMaxThreads; ++i )
+    for ( auto i = 0U; i < nMaxThreads; ++i )
     {
         m_threads.emplace_back( std::move( std::thread( [ pQueue ]() { pQueue->run(); } ) ) );
     }
@@ -328,7 +328,7 @@ void Scheduler::stop()
     m_bStop = true;
 }
 
-void run( task::Schedule::Ptr pSchedule, std::ostream& os )
+void run( task::Schedule::Ptr pSchedule, std::ostream& )
 {
     task::StatusFIFO    fifo;
     int owner = 0;

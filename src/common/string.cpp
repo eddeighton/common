@@ -16,16 +16,7 @@ namespace
 {
 static const char DELIM = '_';
 
-int eds_isspace( int ch ) { return std::isspace( ch ); }
-
 int eds_isalnum( int ch ) { return std::isalnum( ch ); }
-
-std::string style_strip_whitespace( const std::string& str )
-{
-    std::string sResult = str;
-    sResult.erase( std::remove_if( sResult.begin(), sResult.end(), &eds_isspace ), sResult.end() );
-    return sResult;
-}
 
 std::string style_replace_non_alpha_numeric( const std::string& str, char r )
 {

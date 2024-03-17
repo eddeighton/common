@@ -195,7 +195,10 @@ struct BasicValue
 
     struct Hash
     {
-        inline std::size_t operator()( const BasicValue& value ) const { return value.x + value.y; }
+        inline std::size_t operator()( const BasicValue& value ) const
+        {
+            return static_cast< std::size_t >( value.x + value.y );
+        }
     };
 };
 

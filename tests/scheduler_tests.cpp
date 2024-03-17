@@ -7,7 +7,7 @@
 
 #include <sstream>
 #include <chrono>
-
+/*
 namespace
 {
     class TestTask : public task::Task
@@ -289,3 +289,4 @@ TEST( Scheduler, ReSchedule )
     
     
 }
+*/

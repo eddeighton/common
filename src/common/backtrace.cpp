@@ -172,10 +172,6 @@ namespace common
     {
     }
     
-    void msvcr_debugAssert( size_t uiType, const char* pszFile, size_t uiLine, const char* pszFunction, const char* pszMsg )
-    {
-    }
-    
     void getBackTrace( std::ostream& os )
     {
         os << boost::stacktrace::stacktrace();

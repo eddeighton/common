@@ -20,11 +20,11 @@
 
 #include "common/process.hpp"
 
-#pragma warning( push )
-#pragma warning( disable : 4996 ) // iterator thing
-#pragma warning( disable : 4244 ) // conversion to DWORD from system_clock::rep
+#pragma GCC diagnostic push
+//#pragma GCC diagnostic ignored( "-Wuninitialised" ) // iterator thing
+//#pragma GCC diagnostic ignored( "-Wuninitialised" ) // conversion to DWORD from system_clock::rep
 #include <boost/process.hpp>
-#pragma warning( pop )
+#pragma GCC diagnostic pop
 
 #include <boost/asio/io_service.hpp>
 

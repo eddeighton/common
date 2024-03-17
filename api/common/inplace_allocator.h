@@ -9,20 +9,16 @@
 typedef struct _Inplace_Allocator
 {
     IPAType* pBuffer;
-    IPAType iSize;
-    IPAType iFirstFreeIndex;
-}InplaceAllocator;
-
+    IPAType  iSize;
+    IPAType  iFirstFreeIndex;
+} InplaceAllocator;
 
 inline InplaceAllocator inplace_allocator_initialise( IPAType* pBuffer, IPAType iSize )
 {
     InplaceAllocator result = { pBuffer, iSize, 0U };
 
     IPAType iCounter = 1;
-    for( IPAType*    p = result.pBuffer, 
-                    *pEnd = result.pBuffer + result.iSize;
-         p != pEnd; 
-        ++p )
+    for( IPAType *p = result.pBuffer, *pEnd = result.pBuffer + result.iSize; p != pEnd; ++p )
     {
         *p = iCounter++;
     }
@@ -33,7 +29,7 @@ inline InplaceAllocator inplace_allocator_initialise( IPAType* pBuffer, IPAType 
 inline IPAType* inplace_allocator_new( InplaceAllocator* pAllocator )
 {
     IPAType* pResult = pAllocator->pBuffer + pAllocator->iFirstFreeIndex;
-    
+
     if( pAllocator->iFirstFreeIndex != pAllocator->iSize )
     {
         pAllocator->iFirstFreeIndex = *pResult;
@@ -49,27 +45,27 @@ inline bool inplace_allocator_test( InplaceAllocator* pAllocator, IPAType* p )
 
 inline void inplace_allocator_free( InplaceAllocator* pAllocator, IPAType* pToFree )
 {
-    const IPAType iReleasedIndex = pToFree - pAllocator->pBuffer;
+    const auto iReleasedIndex = static_cast< IPAType >( pToFree - pAllocator->pBuffer );
 
-    //find the previous free element
+    // find the previous free element
     if( iReleasedIndex < pAllocator->iFirstFreeIndex )
     {
-        //insert the released element as the first free index
-        *pToFree = pAllocator->iFirstFreeIndex;
+        // insert the released element as the first free index
+        *pToFree                    = pAllocator->iFirstFreeIndex;
         pAllocator->iFirstFreeIndex = iReleasedIndex;
     }
     else
     {
-        //find the previous free index
+        // find the previous free index
         IPAType* pIter = pAllocator->pBuffer + pAllocator->iFirstFreeIndex;
         while( true )
         {
             IPAType* pNext = pAllocator->pBuffer + *pIter;
             if( pNext > pToFree )
             {
-                //found it
+                // found it
                 *pToFree = *pIter;
-                *pIter = iReleasedIndex;
+                *pIter   = iReleasedIndex;
                 break;
             }
             pIter = pNext;
@@ -81,17 +77,15 @@ inline size_t inplace_allocator_remaining( InplaceAllocator* pAllocator )
 {
     size_t iResult = 0;
 
-    for( IPAType    *pIter = pAllocator->pBuffer + pAllocator->iFirstFreeIndex,
-                    *pEnd = pAllocator->pBuffer + pAllocator->iSize;
+    for( IPAType *pIter = pAllocator->pBuffer + pAllocator->iFirstFreeIndex,
+                 *pEnd  = pAllocator->pBuffer + pAllocator->iSize;
 
-                    pIter != pEnd; 
+         pIter != pEnd;
 
-                    pIter = pAllocator->pBuffer + *pIter, 
-                    ++iResult );
+         pIter = pAllocator->pBuffer + *pIter, ++iResult )
+        ;
 
     return iResult;
 }
 
-
-
-#endif //INPLACE_ALLOCATOR_20_12_2015
+#endif // INPLACE_ALLOCATOR_20_12_2015

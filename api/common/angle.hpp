@@ -138,8 +138,6 @@ inline void toVectorDiscrete( typename Angle< 8 >::Value v, TValueType& x, TValu
 {
     switch( v )
     {
-        default:
-            ASSERT( false );
         case Angle< 8 >::eEast:
             x = TValueType( 1 );
             y = TValueType( 0 );
@@ -172,6 +170,9 @@ inline void toVectorDiscrete( typename Angle< 8 >::Value v, TValueType& x, TValu
             x = TValueType( 1 );
             y = TValueType( 1 );
             break;
+        default:
+            ASSERT( false );
+            break;
     }
 }
 template < class TValueType >
@@ -179,8 +180,6 @@ inline void toVectorDiscrete( typename Angle< 4 >::Value v, TValueType& x, TValu
 {
     switch( v )
     {
-        default:
-            ASSERT( false );
         case Angle< 4 >::eEast:
             x = TValueType( 1 );
             y = TValueType( 0 );
@@ -196,6 +195,9 @@ inline void toVectorDiscrete( typename Angle< 4 >::Value v, TValueType& x, TValu
         case Angle< 4 >::eSouth:
             x = TValueType( 0 );
             y = TValueType( 1 );
+            break;
+        default:
+            ASSERT( false );
             break;
     }
 }
