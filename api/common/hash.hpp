@@ -174,7 +174,7 @@ public:
     inline bool operator<( const Hash& cmp ) const { return m_data < cmp.m_data; }
 
     template < class Archive >
-    inline void serialize( Archive& archive, const unsigned int version )
+    inline void serialize( Archive& archive, const unsigned int )
     {
         archive& m_data;
     }

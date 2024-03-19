@@ -140,5 +140,4 @@ TEST( Stash, Basic6 )
     h1 ^= 0.123f;
     h1 ^= std::vector{ 1,2,3,4,5 };
     h1 ^= std::vector{ 'a','n','r' };
-    h1 ^= h1;
 }

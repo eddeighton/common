@@ -31,7 +31,7 @@ Scheduler::Run::Run( Scheduler& scheduler, Owner pOwner, Schedule::Ptr pSchedule
     , m_bComplete( false )
     , m_future( m_promise.get_future() )
 {
-    for ( Task::Ptr pTask : m_pSchedule->getTasks() )
+    for( Task::Ptr pTask : m_pSchedule->getTasks() )
     {
         m_pending.insert( pTask.get() );
     }
@@ -45,7 +45,7 @@ bool Scheduler::Run::isCancelled() const
 
 bool Scheduler::Run::wait()
 {
-    if ( m_future.valid() )
+    if( m_future.valid() )
     {
         return m_future.get();
     }
@@ -60,7 +60,7 @@ void Scheduler::Run::complete()
     Run::Ptr pThis = shared_from_this();
     {
         std::lock_guard< std::recursive_mutex > lock( m_mutex );
-        if ( !m_bComplete )
+        if( !m_bComplete )
         {
             m_bComplete = true;
             m_scheduler.OnRunComplete( pThis );
@@ -71,12 +71,12 @@ void Scheduler::Run::complete()
 void Scheduler::Run::cancel()
 {
     std::lock_guard< std::recursive_mutex > lock( m_mutex );
-    if ( !m_bCancelled )
+    if( !m_bCancelled )
     {
         m_pending.clear();
         m_bCancelled = true;
 
-        if ( m_bStarted )
+        if( m_bStarted )
         {
             complete();
         }
@@ -90,10 +90,10 @@ void Scheduler::Run::cancel()
 void Scheduler::Run::finished()
 {
     std::lock_guard< std::recursive_mutex > lock( m_mutex );
-    if ( !m_bFinished )
+    if( !m_bFinished )
     {
         m_bFinished = true;
-        if ( m_pExceptionPtr.has_value() )
+        if( m_pExceptionPtr.has_value() )
         {
             m_promise.set_exception( m_pExceptionPtr.value() );
         }
@@ -128,13 +128,13 @@ void Scheduler::Run::runTask( Task::RawPtr pTask )
             m_active.erase( iFind );
             m_finished.insert( pTask );
 
-            if ( m_pending.empty() && m_active.empty() )
+            if( m_pending.empty() && m_active.empty() )
             {
                 bRemaining = false;
             }
         }
 
-        if ( bRemaining )
+        if( bRemaining )
         {
             m_scheduler.m_queue.post( std::bind( &Scheduler::Run::next, shared_from_this() ) );
         }
@@ -143,7 +143,7 @@ void Scheduler::Run::runTask( Task::RawPtr pTask )
             complete();
         }
     }
-    catch ( std::exception& ex )
+    catch( std::exception& ex )
     {
         pTask->failed( progress );
 
@@ -156,9 +156,9 @@ void Scheduler::Run::runTask( Task::RawPtr pTask )
 void Scheduler::Run::start()
 {
     std::lock_guard< std::recursive_mutex > lock( m_mutex );
-    if ( !m_bCancelled )
+    if( !m_bCancelled )
     {
-        if ( !m_pending.empty() )
+        if( !m_pending.empty() )
         {
             next();
         }
@@ -174,18 +174,18 @@ void Scheduler::Run::next()
     Task::RawPtrSet ready;
     {
         std::lock_guard< std::recursive_mutex > lock( m_mutex );
-        if ( !m_bCancelled )
+        if( !m_bCancelled )
         {
-            for ( Task::RawPtrSet::iterator i = m_pending.begin(), iEnd = m_pending.end(); i != iEnd; ++i )
+            for( Task::RawPtrSet::iterator i = m_pending.begin(), iEnd = m_pending.end(); i != iEnd; ++i )
             {
                 Task::RawPtr pTask = *i;
-                if ( pTask->isReady( m_finished ) )
+                if( pTask->isReady( m_finished ) )
                 {
                     ready.insert( pTask );
                     m_active.insert( pTask );
                 }
             }
-            for ( Task::RawPtr pTask : ready )
+            for( Task::RawPtr pTask : ready )
             {
                 m_pending.erase( pTask );
             }
@@ -193,9 +193,9 @@ void Scheduler::Run::next()
     }
 
     // schedule tasks
-    if ( !ready.empty() )
+    if( !ready.empty() )
     {
-        for ( Task::RawPtr pTask : ready )
+        for( Task::RawPtr pTask : ready )
         {
             m_scheduler.m_queue.post( std::bind( &Scheduler::Run::runTask, shared_from_this(), pTask ) );
         }
@@ -204,8 +204,8 @@ void Scheduler::Run::next()
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-Scheduler::Scheduler(
-    StatusFIFO& fifo, std::chrono::milliseconds keepAliveRate, std::optional< unsigned int > maxThreads )
+Scheduler::Scheduler( StatusFIFO& fifo, std::chrono::milliseconds keepAliveRate,
+                      std::optional< unsigned int > maxThreads )
     : m_fifo( fifo )
     , m_bStop( false )
     , m_keepAliveRate( keepAliveRate )
@@ -220,16 +220,16 @@ Scheduler::Scheduler(
     VERIFY_RTE( nMaxThreads > 0U );
 
     boost::asio::io_context* pQueue = &m_queue;
-    for ( auto i = 0U; i < nMaxThreads; ++i )
+    for( auto i = 0U; i < nMaxThreads; ++i )
     {
-        m_threads.emplace_back( std::move( std::thread( [ pQueue ]() { pQueue->run(); } ) ) );
+        m_threads.emplace_back( [ pQueue ]() { pQueue->run(); } );
     }
 }
 
 Scheduler::~Scheduler()
 {
     stop();
-    for ( std::thread& thread : m_threads )
+    for( std::thread& thread : m_threads )
     {
         thread.join();
     }
@@ -243,7 +243,7 @@ void Scheduler::OnKeepAlive( const boost::system::error_code& ec )
         bStopped = m_bStop;
     }
 
-    if ( !bStopped && ec.value() == boost::system::errc::success )
+    if( !bStopped && ec.value() == boost::system::errc::success )
     {
         m_keepAliveTimer.expires_at( m_keepAliveTimer.expiry() + m_keepAliveRate );
         using namespace std::placeholders;
@@ -265,7 +265,7 @@ void Scheduler::OnRunComplete( Run::Ptr pRun )
     pRun->finished();
 
     ScheduleRunMap::iterator iFindPending = m_pending.find( pRunOwner );
-    if ( iFindPending != m_pending.end() )
+    if( iFindPending != m_pending.end() )
     {
         Run::Ptr pPendingRun = iFindPending->second;
         m_pending.erase( iFindPending );
@@ -286,11 +286,11 @@ Scheduler::Run::Ptr Scheduler::run( Run::Owner pOwner, Schedule::Ptr pSchedule )
         std::lock_guard< std::recursive_mutex > lock( m_mutex );
 
         ScheduleRunMap::iterator iFind = m_runs.find( pOwner );
-        if ( iFind != m_runs.end() )
+        if( iFind != m_runs.end() )
         {
             // overwrite any existing pending schedule run
             ScheduleRunMap::iterator iFindPending = m_pending.find( pOwner );
-            if ( iFindPending != m_pending.end() )
+            if( iFindPending != m_pending.end() )
             {
                 Run::Ptr pPendingRun = iFindPending->second;
                 m_pending.erase( iFindPending );
@@ -311,9 +311,9 @@ Scheduler::Run::Ptr Scheduler::run( Run::Owner pOwner, Schedule::Ptr pSchedule )
         }
     }
 
-    if ( pOldRun )
+    if( pOldRun )
     {
-        if ( !pOldRun->isCancelled() )
+        if( !pOldRun->isCancelled() )
         {
             pOldRun->cancel();
         }
@@ -330,9 +330,9 @@ void Scheduler::stop()
 
 void run( task::Schedule::Ptr pSchedule, std::ostream& )
 {
-    task::StatusFIFO    fifo;
-    int owner = 0;
-    Scheduler scheduler( fifo, Scheduler::getDefaultAliveRate(), std::thread::hardware_concurrency() - 1 );
+    task::StatusFIFO fifo;
+    int              owner = 0;
+    Scheduler        scheduler( fifo, Scheduler::getDefaultAliveRate(), std::thread::hardware_concurrency() - 1 );
     try
     {
         Scheduler::Run::Ptr pRun = scheduler.run( &owner, pSchedule );
@@ -343,10 +343,9 @@ void run( task::Schedule::Ptr pSchedule, std::ostream& )
             throw std::runtime_error( "Task failed" );
         }
     }
-    catch ( std::exception& ex )
+    catch( std::exception& ex )
     {
         throw;
     }
-
 }
 } // namespace task

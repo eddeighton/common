@@ -12,6 +12,9 @@
 #include <memory>
 
 #include "common/backtrace.hpp"
+#include "common/assert_verify.hpp"
+
+#include "common/clang_tsan_memcpy.h"
 
 void on_terminate()
 {
