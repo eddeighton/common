@@ -20,11 +20,7 @@
 
 #include "common/process.hpp"
 
-#pragma GCC diagnostic push
-//#pragma GCC diagnostic ignored( "-Wuninitialised" ) // iterator thing
-//#pragma GCC diagnostic ignored( "-Wuninitialised" ) // conversion to DWORD from system_clock::rep
 #include <boost/process.hpp>
-#pragma GCC diagnostic pop
 
 #include <boost/asio/io_service.hpp>
 
