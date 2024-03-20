@@ -21,16 +21,18 @@
 #ifndef EDSASSERT_20_12_2012
 #define EDSASSERT_20_12_2012
 
-#include <stdexcept>
-#include <sstream>
-#include <exception>
-
-#include <boost/current_function.hpp>
-
-#include "requireSemicolon.hpp"
 #include "processID.hpp"
 #include "backtrace.hpp"
 #include "terminal.hpp"
+
+#include "requireSemicolon.hpp"
+#include "unreachable.hpp"
+
+#include <boost/current_function.hpp>
+
+#include <stdexcept>
+#include <sstream>
+#include <exception>
 
 #ifdef DEBUG
 
@@ -53,14 +55,14 @@
                                      _os2 << common::COLOUR_RED_BEGIN << "PROCESS " << common::ProcessID::get() \
                                           << " FILE " << __FILE__ << ":" << __LINE__ << " MSG:" << msg          \
                                           << common::COLOUR_END;                                                \
-                                     throw exceptionType( _os2.str() ); )
+                                     throw exceptionType( _os2.str() ); UNREACHABLE; )
 
 #define THROW( exceptionType, msg )                                                                             \
     DO_STUFF_AND_REQUIRE_SEMI_COLON( DEBUG_BREAK(); std::ostringstream _os2;                                    \
                                      _os2 << common::COLOUR_RED_BEGIN << "PROCESS " << common::ProcessID::get() \
                                           << " FILE " << __FILE__ << ":" << __LINE__ << " MSG:" << msg          \
                                           << common::COLOUR_END;                                                \
-                                     throw exceptionType( _os2.str() ); )
+                                     throw exceptionType( _os2.str() ); UNREACHABLE; )
 
 #define ASSERT_MSG( expr, msg ) \
     DO_STUFF_AND_REQUIRE_SEMI_COLON( if( !( expr ) ) { THROW( std::runtime_error, #expr << " " << msg ); } )
@@ -83,13 +85,14 @@
                                      _os << common::COLOUR_RED_BEGIN << "FILE " << __FILE__ << ":" << __LINE__ \
                                          << " FUNCTION:" << BOOST_CURRENT_FUNCTION << "\nMSG:" << msg          \
                                          << common::COLOUR_END;                                                \
-                                     throw exceptionType( _os.str() ); )
+                                     throw exceptionType( _os.str() ); UNREACHABLE; )
 
-#define THROW( exceptionType, msg ) \
-    DO_STUFF_AND_REQUIRE_SEMI_COLON( std::ostringstream _os2; _os2 << msg; throw exceptionType( _os2.str() ); )
+#define THROW( exceptionType, msg )                                                                           \
+    DO_STUFF_AND_REQUIRE_SEMI_COLON( std::ostringstream _os2; _os2 << msg; throw exceptionType( _os2.str() ); \
+                                     UNREACHABLE; )
 
 #define TERMINATE_IF_NOT( expression, msg ) \
-    DO_STUFF_AND_REQUIRE_SEMI_COLON( if( !( expression ) ) { std::terminate(); } )
+    DO_STUFF_AND_REQUIRE_SEMI_COLON( if( !( expression ) ) { std::terminate(); UNREACHABLE; } )
 
 #endif //_DEBUG
 

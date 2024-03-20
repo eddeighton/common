@@ -17,17 +17,15 @@
 //  NEGLIGENCE) OR STRICT LIABILITY, EVEN IF COPYRIGHT OWNERS ARE ADVISED
 //  OF THE POSSIBILITY OF SUCH DAMAGES.
 
-//ignor clang warnings
-
 #ifdef __clang__
 
 #elif __GNUC__
 
-#pragma diagnostic ignored( disable : 4146) // unary minus operator applied to unsigned type,
-#pragma diagnostic ignored( disable : 4141) //'inline': used more than once
-#pragma diagnostic ignored( disable : 4141) //'argument': conversion from 'uint64_t' to 'size_t'
-#pragma diagnostic ignored( disable : 4244) //'argument': conversion from 'uint64_t' to 'uint32_t'
-#pragma diagnostic ignored( disable : 4996) //
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wredundant-move"
+
 
 #elif _WIN32
 
